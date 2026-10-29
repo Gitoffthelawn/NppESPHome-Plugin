@@ -175,12 +175,16 @@ uses
   System.IOUtils;
 
 resourcestring
-  rsInvalidESPHomeInstallation = 'No valid installation of ESPHome has been found on your system.';
-  rsInvalidESPHomeInstallation2 = 'Please (re)install ESPHome following the instructions available on the following web page:';
+  rsInvalidESPHomeInstallation = 'NppESPHome cannot run the requested command because the ESPHome executable was not found.';
+  rsInvalidESPHomeInstallation2 = 'No command has been started. Install or reinstall ESPHome and make sure that "esphome.exe" is available in the Windows PATH ' +
+    '(normally through the Python Scripts directory). Then restart Notepad++ and verify the installation by running "esphome version" in a command prompt.' +
+    sLineBreak + sLineBreak + 'Installation instructions:';
   rsInvalidESPHomeInstallation3 = '<a href="https://www.esphome.io/guides/installing_esphome/">Installing ESPHome Manually</a>';
 
-  rsNoProjectSelected = 'No ESPHome project is currently selected.';
-  rsNoProjectSelected2 = 'To use this command, please select the current project and try again.'#13#13#10'You can select it through the menu command:'#13#10'"Plugins" -> "NppESPHome" -> "Select Project..."';
+  rsNoProjectSelected = 'The requested command needs an active ESPHome project, but no project is currently selected.';
+  rsNoProjectSelected2 = 'No command has been started and no file has been changed.' + sLineBreak + sLineBreak +
+    'Select a project through "Plugins" -> "NppESPHome" -> "Select Project...", or select it in the Projects panel. ' +
+    'If the project is not listed yet, add its main YAML file first, then retry the command.';
   rsPipNotFound = 'pip.exe was not found.';
 
 {$REGION 'Callback Wrappers'}
@@ -665,8 +669,8 @@ begin
     begin
       // Prevent duplicate project registrations for the same YAML file.
       if Assigned(ProjectList.GetProjectFromFileName(FileOpen.FileName)) then
-        TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpen.FileName)])).WindowCaption(rsMessageBoxError).
-          Text(rsProjectAlreadyExists2).SetFlags([tfAllowDialogCancellation]).Error.OK.Execute(nil)
+        TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpen.FileName), ExpandFileName(FileOpen.FileName)])).WindowCaption(rsMessageBoxError).
+          Text(rsProjectAlreadyExists2).Error.OK.Execute(NppData.NppHandle)
       else
       begin
         // Parse the selected YAML immediately; invalid ESPHome files are rejected.
@@ -682,8 +686,9 @@ begin
         else
         begin
           Project.Free;
-          TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpen.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-            Error.OK.SetFlags([tfAllowDialogCancellation]).Execute(nil);
+          TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpen.FileName), ExpandFileName(FileOpen.FileName)])).
+            Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
+            Error.OK.Execute(NppData.NppHandle);
         end;
       end;
     end;
@@ -722,8 +727,10 @@ begin
   inherited;
   if Assigned(ProjectList.Current) then
   begin
-    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
-      SetFlags([tfAllowDialogCancellation]).Warning.YesNo.Execute(nil) = mrYes then
+    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName, ExpandFileName(ProjectList.Current.FileName)])).
+      Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
+      Warning.YesNo.DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
+      Execute(NppData.NppHandle) = mrYes then
     begin
       // Remember the old index so the next nearest project can become current.
       I := ProjectList.IndexOf(ProjectList.Current);
@@ -843,11 +850,12 @@ begin
   if CheckESPHome and CheckCurrentProject then
   begin
     // clean-all is destructive enough to require an explicit confirmation dialog.
-    if TD.ClearFlag(tfPositionRelativeToWindow).
-          WindowCaption(rsMessageBoxWarning).
+    if TD.WindowCaption(rsMessageBoxWarning).
           Text(rsConfirmExecuteCleanAll).
-          Text(Format(rsConfirmExecuteCleanAll2, [ProjectList.Current.FriendlyName])).
-          Warning.YesNo.Execute = mrYes then
+          Text(Format(rsConfirmExecuteCleanAll2, [ProjectList.Current.FriendlyName,
+            ExpandFileName(ProjectList.Current.FileName)])).
+          Warning.YesNo.DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
+          Execute(NppData.NppHandle) = mrYes then
       ExecuteESPHomeCommand(scCleanAll);
   end;
 end;
@@ -1278,8 +1286,11 @@ begin
 end;
 
 resourcestring
-  rsKnownDependencyRemoval = 'Dependency file "%s" is going to be removed from the "%s" project.';
-  rsKnownDependencyRemoval2 = 'Are you sure?';
+  rsKnownDependencyRemoval = 'Remove dependency "%s" from project "%s"?' + sLineBreak + sLineBreak +
+    'Dependency file: "%s"' + sLineBreak + 'Project file: "%s"';
+  rsKnownDependencyRemoval2 = 'Only the dependency association stored in the NppESPHome configuration will be removed. ' +
+    'The dependency file will remain on disk, its contents will not be changed, and the project YAML will not be edited.' +
+    sLineBreak + sLineBreak + 'You can add the dependency again later. Do you want to continue?';
 
 // *****************************************************************************
 // Purpose: Removes a dependency file from the current project after user
@@ -1292,8 +1303,11 @@ begin
   inherited;
   if Assigned(ProjectList.Current) then
   begin
-    if TD(Format(rsKnownDependencyRemoval, [ExtractFileName(DepFile), ProjectList.Current.FriendlyName])).Text(rsKnownDependencyRemoval2).WindowCaption(rsMessageBoxWarning).
-      SetFlags([tfAllowDialogCancellation]).Warning.YesNo.Execute(nil) = mrYes then
+    if TD(Format(rsKnownDependencyRemoval, [ExtractFileName(DepFile), ProjectList.Current.FriendlyName,
+      ExpandFileName(DepFile), ExpandFileName(ProjectList.Current.FileName)])).
+      Text(rsKnownDependencyRemoval2).WindowCaption(rsMessageBoxWarning).
+      Warning.YesNo.DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
+      Execute(NppData.NppHandle) = mrYes then
     begin
       // Find the dependency by full path so duplicate display names are not ambiguous.
       I := ProjectList.Current.OptionDependencies.IndexOf(DepFile);
@@ -1619,8 +1633,9 @@ begin
   Result := False;
   // Show actionable guidance instead of failing silently when ESPHome is missing.
   if not FileExists(ESPHomeFile) then
-    TD(rsInvalidESPHomeInstallation).Text(rsInvalidESPHomeInstallation2).Text(rsInvalidESPHomeInstallation3).WindowCaption(rsMessageBoxError).Hypertext.SetFlags
-      ([tfAllowDialogCancellation]).Error.OK.Execute(nil)
+    TD(rsInvalidESPHomeInstallation).Text(rsInvalidESPHomeInstallation2).
+      Text(rsInvalidESPHomeInstallation3).WindowCaption(rsMessageBoxError).
+      Hypertext.Error.OK.Execute(NppData.NppHandle)
   else
     Result := True;
 end;
@@ -1635,7 +1650,8 @@ begin
   // Dependency changes always belong to the current project.
   // Commands that need project context use one shared warning path.
   if not Assigned(ProjectList.Current) then
-    TD(rsNoProjectSelected).Text(rsNoProjectSelected2).WindowCaption(rsMessageBoxError).SetFlags([tfAllowDialogCancellation]).Warning.OK.Execute(nil)
+    TD(rsNoProjectSelected).Text(rsNoProjectSelected2).
+      WindowCaption(rsMessageBoxWarning).Warning.OK.Execute(NppData.NppHandle)
   else
     Result := True;
 end;

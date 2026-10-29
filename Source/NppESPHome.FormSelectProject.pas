@@ -54,8 +54,10 @@ begin
     // Prevent duplicate entries before constructing a new project object.
     if Assigned(ProjectList.GetProjectFromFileName(FileOpenDialogProject.FileName)) then
     begin
-      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
-        Text(rsProjectAlreadyExists2).SetFlags([tfAllowDialogCancellation]).Error.OK.Execute(Self);
+      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName),
+        ExpandFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
+        Text(rsProjectAlreadyExists2).ClearFlag(tfPositionRelativeToWindow).
+        Error.OK.Execute(Self);
       Exit;
     end;
     Project := TProject.Create(FileOpenDialogProject.FileName);
@@ -71,8 +73,9 @@ begin
     else
     begin
       Project.Free;
-      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-        Error.OK.SetFlags([tfAllowDialogCancellation]).Execute(Self);
+      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName),
+        ExpandFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
+        ClearFlag(tfPositionRelativeToWindow).Error.OK.Execute(Self);
     end;
   end;
 end;
@@ -88,8 +91,10 @@ begin
   inherited;
   if Assigned(ProjectList.Current) then
   begin
-    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
-      SetFlags([tfAllowDialogCancellation]).Warning.YesNo.Execute (Self) = mrYes then
+    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName,
+      ExpandFileName(ProjectList.Current.FileName)])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
+      ClearFlag(tfPositionRelativeToWindow).Warning.YesNo.DefButton(tcbNo).
+      AddFlag(tfAllowDialogCancellation).Execute(Self) = mrYes then
     begin
       I := ProjectList.IndexOf(ProjectList.Current);
       ProjectList.Delete(I);

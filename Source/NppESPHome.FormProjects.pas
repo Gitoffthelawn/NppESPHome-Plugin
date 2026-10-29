@@ -677,8 +677,10 @@ begin
   inherited;
   if Assigned(ProjectList.Current) then
   begin
-    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
-      SetFlags([tfAllowDialogCancellation]).Warning.YesNo.Execute (Self) = mrYes then
+    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName,
+      ExpandFileName(ProjectList.Current.FileName)])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
+      ClearFlag(tfPositionRelativeToWindow).Warning.YesNo.DefButton(tcbNo).
+      AddFlag(tfAllowDialogCancellation).Execute(Self) = mrYes then
     begin
       I := ProjectList.IndexOf(ProjectList.Current);
       ProjectList.Delete(I);
@@ -715,8 +717,10 @@ begin
   begin
     if Assigned(ProjectList.GetProjectFromFileName(FileOpenDialogProject.FileName)) then
     begin
-      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
-        Text(rsProjectAlreadyExists2).SetFlags([tfAllowDialogCancellation]).Error.OK.Execute(Self);
+      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName),
+        ExpandFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
+        Text(rsProjectAlreadyExists2).ClearFlag(tfPositionRelativeToWindow).
+        Error.OK.Execute(Self);
       Exit;
     end;
     Project := TProject.Create(FileOpenDialogProject.FileName);
@@ -730,8 +734,9 @@ begin
     else
     begin
       Project.Free;
-      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-        Error.OK.SetFlags([tfAllowDialogCancellation]).Execute(Self);
+      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName),
+        ExpandFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
+        ClearFlag(tfPositionRelativeToWindow).Error.OK.Execute(Self);
     end;
   end;
 end;
@@ -913,14 +918,20 @@ procedure TFormProjects.PopupMenuDownloadTemplatesClick(Sender: TObject);
 var
   Flag: Boolean;
 begin
-  if TD(rsConfirmOverwriteTemplates).Text(rsConfirmOverwriteTemplates2).Text(rsConfirmOverwriteTemplates3).Verification(rsConfirmOverwriteTemplates4, @Flag).WindowCaption(rsMessageBoxWarning).Warning.YesNo.
-    SetFlags([tfAllowDialogCancellation]).Execute(Self) = mrYes then
+  Flag := False;
+  if TD(Format(rsConfirmOverwriteTemplates, [TemplateFile])).Text(rsConfirmOverwriteTemplates2).
+    Text(rsConfirmOverwriteTemplates3).Verification(rsConfirmOverwriteTemplates4, @Flag).
+    WindowCaption(rsMessageBoxWarning).Warning.YesNo.
+    DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
+    ClearFlag(tfPositionRelativeToWindow).Execute(Self) = mrYes then
   begin
     if Flag then
     begin
       DownloadTemplateFileFromGitHub;
       PopupMenuReloadXMLFileConfigurationClick(nil);
-      TD(rsTemplatesXMLDownloaded).WindowCaption(rsMessageBoxInfo).Info.OK.SetFlags([tfAllowDialogCancellation]).Execute(Self);
+      TD(rsTemplatesXMLDownloaded).Text(Format(rsTemplatesXMLDownloaded2, [TemplateFile])).
+        WindowCaption(rsMessageBoxInfo).ClearFlag(tfPositionRelativeToWindow).
+        Info.OK.Execute(Self);
     end;
   end;
 end;

@@ -344,11 +344,11 @@
           <item name="ESPHomePlugin_rsInvalidESPHomeInstallation">
             <properties>
               <property>
-                <value>No valid installation of ESPHome has been found on your system.</value>
+                <value>NppESPHome cannot run the requested command because the ESPHome executable was not found.</value>
                 <translations>
-                  <translation language="en">No valid installation of ESPHome has been found on your system.</translation>
-                  <translation language="it">Non è stata rilevata alcuna installazione valida di ESPHome sul tuo sistema.</translation>
-                  <translation language="es" status="proposed">No se ha encontrado ninguna instalación válida de ESPHome en tu sistema.</translation>
+                  <translation language="en">NppESPHome cannot run the requested command because the ESPHome executable was not found.</translation>
+                  <translation language="it">NppESPHome non può eseguire il comando richiesto perché l&apos;eseguibile di ESPHome non è stato trovato.</translation>
+                  <translation language="es" status="proposed">NppESPHome no puede ejecutar el comando solicitado porque no se ha encontrado el ejecutable de ESPHome.</translation>
                 </translations>
               </property>
             </properties>
@@ -356,11 +356,11 @@
           <item name="ESPHomePlugin_rsInvalidESPHomeInstallation2">
             <properties>
               <property>
-                <value>Please (re)install ESPHome following the instructions available on the following web page:</value>
+                <value>No command has been started. Install or reinstall ESPHome and make sure that &quot;esphome.exe&quot; is available in the Windows PATH (normally through the Python Scripts directory). Then restart Notepad++ and verify the installation by running &quot;esphome version&quot; in a command prompt.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Installation instructions:</value>
                 <translations>
-                  <translation language="en">Please (re)install ESPHome following the instructions available on the following web page:</translation>
-                  <translation language="it">Si prega di (re)installare ESPHome seguendo le istruzioni disponibili alla seguente pagina web:</translation>
-                  <translation language="es" status="proposed">Por favor, (re)instala ESPHome siguiendo las instrucciones disponibles en la siguiente página web:</translation>
+                  <translation language="en">No command has been started. Install or reinstall ESPHome and make sure that &quot;esphome.exe&quot; is available in the Windows PATH (normally through the Python Scripts directory). Then restart Notepad++ and verify the installation by running &quot;esphome version&quot; in a command prompt.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Installation instructions:</translation>
+                  <translation language="it">Non è stato avviato alcun comando. Installa o reinstalla ESPHome e assicurati che &quot;esphome.exe&quot; sia disponibile nel PATH di Windows (normalmente tramite la directory Scripts di Python). Riavvia quindi Notepad++ e verifica l&apos;installazione eseguendo &quot;esphome version&quot; in un prompt dei comandi.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Istruzioni per l&apos;installazione:</translation>
+                  <translation language="es" status="proposed">No se ha iniciado ningún comando. Instala o reinstala ESPHome y asegúrate de que &quot;esphome.exe&quot; esté disponible en el PATH de Windows (normalmente mediante el directorio Scripts de Python). Después, reinicia Notepad++ y comprueba la instalación ejecutando &quot;esphome version&quot; en un símbolo del sistema.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Instrucciones de instalación:</translation>
                 </translations>
               </property>
             </properties>
@@ -380,11 +380,11 @@
           <item name="ESPHomePlugin_rsKnownDependencyRemoval">
             <properties>
               <property>
-                <value>Dependency file "%s" is going to be removed from the "%s" project.</value>
+                <value>Remove dependency &quot;%s&quot; from project &quot;%s&quot;?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Dependency file: &quot;%s&quot;&amp;#13;&amp;#10;Project file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">Dependency file "%s" is going to be removed from the "%s" project.</translation>
-                  <translation language="it">Il file di dipendenza "%s" verrà rimosso dal progetto "%s".</translation>
-                  <translation language="es" status="proposed">El archivo de dependencia «%s» se va a eliminar del proyecto «%s».</translation>
+                  <translation language="en">Remove dependency &quot;%s&quot; from project &quot;%s&quot;?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Dependency file: &quot;%s&quot;&amp;#13;&amp;#10;Project file: &quot;%s&quot;</translation>
+                  <translation language="it">Rimuovere la dipendenza &quot;%s&quot; dal progetto &quot;%s&quot;?&amp;#13;&amp;#10;&amp;#13;&amp;#10;File di dipendenza: &quot;%s&quot;&amp;#13;&amp;#10;File di progetto: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">¿Quitar la dependencia «%s» del proyecto «%s»?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo de dependencia: «%s»&amp;#13;&amp;#10;Archivo del proyecto: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -392,11 +392,11 @@
           <item name="ESPHomePlugin_rsKnownDependencyRemoval2">
             <properties>
               <property>
-                <value>Are you sure?</value>
+                <value>Only the dependency association stored in the NppESPHome configuration will be removed. The dependency file will remain on disk, its contents will not be changed, and the project YAML will not be edited.&amp;#13;&amp;#10;&amp;#13;&amp;#10;You can add the dependency again later. Do you want to continue?</value>
                 <translations>
-                  <translation language="en">Are you sure?</translation>
-                  <translation language="it">Ne sei sicuro?</translation>
-                  <translation language="es" status="proposed">¿Estás seguro?</translation>
+                  <translation language="en">Only the dependency association stored in the NppESPHome configuration will be removed. The dependency file will remain on disk, its contents will not be changed, and the project YAML will not be edited.&amp;#13;&amp;#10;&amp;#13;&amp;#10;You can add the dependency again later. Do you want to continue?</translation>
+                  <translation language="it">Verrà rimossa soltanto l&apos;associazione della dipendenza memorizzata nella configurazione di NppESPHome. Il file della dipendenza rimarrà sul disco, il suo contenuto non verrà modificato e il file YAML del progetto non verrà alterato.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Potrai aggiungere nuovamente la dipendenza in seguito. Vuoi continuare?</translation>
+                  <translation language="es" status="proposed">Solo se quitará la asociación de la dependencia guardada en la configuración de NppESPHome. El archivo de dependencia permanecerá en el disco, su contenido no cambiará y el YAML del proyecto no se editará.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Puedes volver a añadir la dependencia más adelante. ¿Quieres continuar?</translation>
                 </translations>
               </property>
             </properties>
@@ -404,11 +404,11 @@
           <item name="ESPHomePlugin_rsNoProjectSelected">
             <properties>
               <property>
-                <value>No ESPHome project is currently selected.</value>
+                <value>The requested command needs an active ESPHome project, but no project is currently selected.</value>
                 <translations>
-                  <translation language="en">No ESPHome project is currently selected.</translation>
-                  <translation language="it">Al momento non è selezionato alcun progetto ESPHome.</translation>
-                  <translation language="es" status="proposed">Actualmente no hay ningún proyecto de ESPHome seleccionado.</translation>
+                  <translation language="en">The requested command needs an active ESPHome project, but no project is currently selected.</translation>
+                  <translation language="it">Il comando richiesto necessita di un progetto ESPHome attivo, ma al momento non è selezionato alcun progetto.</translation>
+                  <translation language="es" status="proposed">El comando solicitado necesita un proyecto de ESPHome activo, pero actualmente no hay ningún proyecto seleccionado.</translation>
                 </translations>
               </property>
             </properties>
@@ -416,11 +416,11 @@
           <item name="ESPHomePlugin_rsNoProjectSelected2">
             <properties>
               <property>
-                <value>To use this command, please select the current project and try again.&amp;#13;&amp;#13;&amp;#10;You can select it through the menu command:&amp;#13;&amp;#10;"Plugins" -&gt; "NppESPHome" -&gt; "Select Project..."</value>
+                <value>No command has been started and no file has been changed.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Select a project through &quot;Plugins&quot; -&gt; &quot;NppESPHome&quot; -&gt; &quot;Select Project...&quot;, or select it in the Projects panel. If the project is not listed yet, add its main YAML file first, then retry the command.</value>
                 <translations>
-                  <translation language="en">To use this command, please select the current project and try again.&amp;#13;&amp;#13;&amp;#10;You can select it through the menu command:&amp;#13;&amp;#10;"Plugins" -&gt; "NppESPHome" -&gt; "Select Project..."</translation>
-                  <translation language="it">Per usare questo comando, per favore selezona il progetto corrente e prova di nuovo. È possibile selezionarlo tramite il comando del menu:&amp;#13;&amp;#10;"Plugins" -&gt; "NppESPHome" -&gt; "Seleziona Progetto..."&amp;#13;&amp;#10;&amp;#13;&amp;#10;</translation>
-                  <translation language="es" status="proposed">Para usar este comando, selecciona el proyecto actual e inténtalo de nuevo. Puedes seleccionarlo mediante el comando de menú:&amp;#13;&amp;#10;"Plugins" -&gt; "NppESPHome" -&gt; "Select Project..."</translation>
+                  <translation language="en">No command has been started and no file has been changed.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Select a project through &quot;Plugins&quot; -&gt; &quot;NppESPHome&quot; -&gt; &quot;Select Project...&quot;, or select it in the Projects panel. If the project is not listed yet, add its main YAML file first, then retry the command.</translation>
+                  <translation language="it">Non è stato avviato alcun comando e nessun file è stato modificato.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Seleziona un progetto tramite &quot;Plugin&quot; -&gt; &quot;NppESPHome&quot; -&gt; &quot;Seleziona progetto...&quot;, oppure selezionalo nel pannello Progetti. Se il progetto non è ancora nell&apos;elenco, aggiungi prima il suo file YAML principale, quindi riprova il comando.</translation>
+                  <translation language="es" status="proposed">No se ha iniciado ningún comando ni se ha modificado ningún archivo.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selecciona un proyecto mediante &quot;Plugins&quot; -&gt; &quot;NppESPHome&quot; -&gt; &quot;Select Project...&quot;, o selecciónalo en el panel Projects. Si el proyecto aún no aparece en la lista, añade primero su archivo YAML principal y vuelve a intentar el comando.</translation>
                 </translations>
               </property>
             </properties>
@@ -464,11 +464,11 @@
           <item name="ESPHomeShared_rsConfirmExecuteCleanAll">
             <properties>
               <property>
-                <value>Are you sure you want to run "esphome clean-all" command?</value>
+                <value>Delete all ESPHome and PlatformIO build caches used by this project?</value>
                 <translations>
-                  <translation language="en">Are you sure you want to run "esphome clean-all" command?</translation>
-                  <translation language="it">Sei sicuro di voler eseguire il comando "esphome clean-all"?</translation>
-                  <translation language="es" status="proposed">¿Estás seguro de que quieres ejecutar el comando «esphome clean-all»?</translation>
+                  <translation language="en">Delete all ESPHome and PlatformIO build caches used by this project?</translation>
+                  <translation language="it">Eliminare tutte le cache di compilazione ESPHome e PlatformIO usate da questo progetto?</translation>
+                  <translation language="es" status="proposed">¿Eliminar todas las cachés de compilación de ESPHome y PlatformIO usadas por este proyecto?</translation>
                 </translations>
               </property>
             </properties>
@@ -476,11 +476,11 @@
           <item name="ESPHomeShared_rsConfirmExecuteCleanAll2">
             <properties>
               <property flags="A">
-                <value>You are about to run "esphome clean-all" for project "%s".&amp;#13;&amp;#10;&amp;#13;&amp;#10;This will remove all ESPHome build files, PlatformIO platforms and packages, and the PlatformIO core directory related to the selected project or working folder.&amp;#13;&amp;#10;&amp;#13;&amp;#10;This is useful for a full rebuild, but the next compilation may take a long time.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</value>
+                <value>NppESPHome is about to run &quot;esphome clean-all&quot; for project &quot;%s&quot;.&amp;#13;&amp;#10;Project file: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;This removes generated ESPHome build files, PlatformIO platforms and packages, and the related PlatformIO core directory. The project YAML, dependency files, and other source files will not be deleted or modified.&amp;#13;&amp;#10;&amp;#13;&amp;#10;The next compilation will recreate or download the required build data and may therefore take considerably longer. The deleted cache contents cannot be restored by NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</value>
                 <translations>
-                  <translation language="en">You are about to run "esphome clean-all" for project "%s".&amp;#13;&amp;#10;&amp;#13;&amp;#10;This will remove all ESPHome build files, PlatformIO platforms and packages, and the PlatformIO core directory related to the selected project or working folder.&amp;#13;&amp;#10;&amp;#13;&amp;#10;This is useful for a full rebuild, but the next compilation may take a long time.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</translation>
-                  <translation language="it">Stai per eseguire “esphome clean-all” per il progetto “%s”.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Questa operazione rimuoverà tutti i file di build di ESPHome, le piattaforme e i pacchetti PlatformIO, nonché la directory core di PlatformIO relativi al progetto selezionato o alla cartella di lavoro.&amp;#13;&amp;#10;&amp;#13;&amp;#10;È utile per eseguire una ricompilazione completa, ma la prossima compilazione potrebbe richiedere molto tempo.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Vuoi continuare?</translation>
-                  <translation language="es" status="proposed">You are about to run "esphome clean-all" for project "%s".&amp;#13;&amp;#10;&amp;#13;&amp;#10;Estás a punto de ejecutar "esphome clean-all" para el proyecto "%s".&amp;#13;&amp;#10;&amp;#13;&amp;#10;Esto eliminará todos los archivos de compilación de ESPHome, las plataformas y paquetes de PlatformIO, y el directorio principal de PlatformIO relacionados con el proyecto o la carpeta de trabajo seleccionados.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Esto es útil para una reconstrucción completa, pero la siguiente compilación puede tardar mucho tiempo.&amp;#13;&amp;#10;&amp;#13;&amp;#10;¿Quieres continuar?</translation>
+                  <translation language="en">NppESPHome is about to run &quot;esphome clean-all&quot; for project &quot;%s&quot;.&amp;#13;&amp;#10;Project file: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;This removes generated ESPHome build files, PlatformIO platforms and packages, and the related PlatformIO core directory. The project YAML, dependency files, and other source files will not be deleted or modified.&amp;#13;&amp;#10;&amp;#13;&amp;#10;The next compilation will recreate or download the required build data and may therefore take considerably longer. The deleted cache contents cannot be restored by NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</translation>
+                  <translation language="it">NppESPHome sta per eseguire &quot;esphome clean-all&quot; per il progetto &quot;%s&quot;.&amp;#13;&amp;#10;File di progetto: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;L&apos;operazione rimuove i file di compilazione ESPHome generati, le piattaforme e i pacchetti PlatformIO e la relativa directory core di PlatformIO. Il file YAML del progetto, i file delle dipendenze e gli altri file sorgente non verranno eliminati né modificati.&amp;#13;&amp;#10;&amp;#13;&amp;#10;La compilazione successiva ricreerà o scaricherà i dati di build necessari e potrebbe quindi richiedere molto più tempo. NppESPHome non può ripristinare il contenuto eliminato dalle cache.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Vuoi continuare?</translation>
+                  <translation language="es" status="proposed">NppESPHome va a ejecutar &quot;esphome clean-all&quot; para el proyecto «%s».&amp;#13;&amp;#10;Archivo del proyecto: «%s»&amp;#13;&amp;#10;&amp;#13;&amp;#10;Esto elimina los archivos de compilación generados por ESPHome, las plataformas y paquetes de PlatformIO y el directorio principal de PlatformIO relacionado. El YAML del proyecto, los archivos de dependencias y los demás archivos fuente no se eliminarán ni modificarán.&amp;#13;&amp;#10;&amp;#13;&amp;#10;La siguiente compilación volverá a crear o descargar los datos de compilación necesarios y, por ello, puede tardar bastante más. NppESPHome no puede restaurar el contenido eliminado de las cachés.&amp;#13;&amp;#10;&amp;#13;&amp;#10;¿Quieres continuar?</translation>
                 </translations>
               </property>
             </properties>
@@ -488,11 +488,11 @@
           <item name="ESPHomeShared_rsConfirmOverwriteTemplates">
             <properties>
               <property>
-                <value>You are going to overwrite your "NppESPHome.xml" templates file with the one available on GitHub.</value>
+                <value>Replace the local ESPHome template catalog with the current default catalog from GitHub?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Local file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">You are going to overwrite your "NppESPHome.xml" templates file with the one available on GitHub.</translation>
-                  <translation language="it">Sostituirai il tuo file di modelli "NppESPHome.xml" con quello disponibile su GitHub.</translation>
-                  <translation language="es" status="proposed">Vas a sobrescribir tu archivo de plantillas «NppESPHome.xml» con el que está disponible en GitHub.</translation>
+                  <translation language="en">Replace the local ESPHome template catalog with the current default catalog from GitHub?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Local file: &quot;%s&quot;</translation>
+                  <translation language="it">Sostituire il catalogo locale dei modelli ESPHome con il catalogo predefinito corrente disponibile su GitHub?&amp;#13;&amp;#10;&amp;#13;&amp;#10;File locale: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">¿Sustituir el catálogo local de plantillas de ESPHome por el catálogo predeterminado actual de GitHub?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo local: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -500,11 +500,11 @@
           <item name="ESPHomeShared_rsConfirmOverwriteTemplates2">
             <properties>
               <property>
-                <value>Any modification done on the local XML will be lost.</value>
+                <value>The existing file will be overwritten. Every local template, edit, or customization stored only in this XML file will be permanently lost.</value>
                 <translations>
-                  <translation language="en">Any modification done on the local XML will be lost.</translation>
-                  <translation language="it">Qualsiasi modifica apportata al file XML locale andrà persa.</translation>
-                  <translation language="es" status="proposed">Cualquier modificación que se realice en el archivo XML local se perderá.</translation>
+                  <translation language="en">The existing file will be overwritten. Every local template, edit, or customization stored only in this XML file will be permanently lost.</translation>
+                  <translation language="it">Il file esistente verrà sovrascritto. Ogni modello, modifica o personalizzazione locale memorizzata soltanto in questo file XML andrà persa definitivamente.</translation>
+                  <translation language="es" status="proposed">El archivo existente se sobrescribirá. Se perderán permanentemente todas las plantillas, ediciones o personalizaciones locales guardadas únicamente en este archivo XML.</translation>
                 </translations>
               </property>
             </properties>
@@ -512,11 +512,11 @@
           <item name="ESPHomeShared_rsConfirmOverwriteTemplates3">
             <properties>
               <property>
-                <value>Are you sure you want to continue?</value>
+                <value>Create a backup first if you may need those changes. After the download, NppESPHome will reload the replacement catalog.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</value>
                 <translations>
-                  <translation language="en">Are you sure you want to continue?</translation>
-                  <translation language="it">Sei sicuro di voler continuare?</translation>
-                  <translation language="es" status="proposed">¿Estás seguro de que quieres continuar?</translation>
+                  <translation language="en">Create a backup first if you may need those changes. After the download, NppESPHome will reload the replacement catalog.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Do you want to continue?</translation>
+                  <translation language="it">Crea prima una copia di backup se potresti aver bisogno di tali modifiche. Dopo il download, NppESPHome ricaricherà il catalogo sostitutivo.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Vuoi continuare?</translation>
+                  <translation language="es" status="proposed">Crea antes una copia de seguridad si puedes necesitar esos cambios. Después de la descarga, NppESPHome volverá a cargar el catálogo de sustitución.&amp;#13;&amp;#10;&amp;#13;&amp;#10;¿Quieres continuar?</translation>
                 </translations>
               </property>
             </properties>
@@ -524,11 +524,11 @@
           <item name="ESPHomeShared_rsConfirmOverwriteTemplates4">
             <properties>
               <property>
-                <value>I am really sure and I want to overwrite my local template file.</value>
+                <value>I understand that all local changes in NppESPHome.xml will be lost, and I want to replace the file.</value>
                 <translations>
-                  <translation language="en">I am really sure and I want to overwrite my local template file.</translation>
-                  <translation language="it">Ne sono davvero sicuro e voglio sovrascrivere il mio file di template locale.</translation>
-                  <translation language="es" status="proposed">Estoy totalmente seguro y quiero sobrescribir mi archivo de plantilla local.</translation>
+                  <translation language="en">I understand that all local changes in NppESPHome.xml will be lost, and I want to replace the file.</translation>
+                  <translation language="it">Sono consapevole che tutte le modifiche locali in NppESPHome.xml andranno perse e desidero sostituire il file.</translation>
+                  <translation language="es" status="proposed">Entiendo que se perderán todos los cambios locales de NppESPHome.xml y quiero sustituir el archivo.</translation>
                 </translations>
               </property>
             </properties>
@@ -597,11 +597,23 @@
           <item name="ESPHomeShared_rsErrorReadingTemplateFile">
             <properties>
               <property>
-                <value>The following error has been encountered reading the XML Template file:</value>
+                <value>NppESPHome could not load the local ESPHome template catalog.</value>
                 <translations>
-                  <translation language="en">The following error has been encountered reading the XML Template file:</translation>
-                  <translation language="it">Durante la lettura del file del modello XML si è verificato il seguente errore:</translation>
-                  <translation language="es" status="proposed">Se ha producido el siguiente error al leer el archivo de plantilla XML:</translation>
+                  <translation language="en">NppESPHome could not load the local ESPHome template catalog.</translation>
+                  <translation language="it">NppESPHome non ha potuto caricare il catalogo locale dei modelli ESPHome.</translation>
+                  <translation language="es" status="proposed">NppESPHome no ha podido cargar el catálogo local de plantillas de ESPHome.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="ESPHomeShared_rsErrorReadingTemplateFile2">
+            <properties>
+              <property>
+                <value>File: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;Technical details: %s&amp;#13;&amp;#10;&amp;#13;&amp;#10;The template list has been left empty to avoid using incomplete data. Check that the file is readable and contains well-formed XML, then correct it or download a fresh default catalog and reload the template list.</value>
+                <translations>
+                  <translation language="en">File: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;Technical details: %s&amp;#13;&amp;#10;&amp;#13;&amp;#10;The template list has been left empty to avoid using incomplete data. Check that the file is readable and contains well-formed XML, then correct it or download a fresh default catalog and reload the template list.</translation>
+                  <translation language="it">File: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;Dettagli tecnici: %s&amp;#13;&amp;#10;&amp;#13;&amp;#10;L&apos;elenco dei modelli è stato lasciato vuoto per evitare di usare dati incompleti. Controlla che il file sia leggibile e contenga XML ben formato, quindi correggilo oppure scarica un nuovo catalogo predefinito e ricarica l&apos;elenco dei modelli.</translation>
+                  <translation language="es" status="proposed">Archivo: «%s»&amp;#13;&amp;#10;&amp;#13;&amp;#10;Detalles técnicos: %s&amp;#13;&amp;#10;&amp;#13;&amp;#10;La lista de plantillas se ha dejado vacía para evitar el uso de datos incompletos. Comprueba que el archivo sea legible y contenga XML bien formado; después, corrígelo o descarga un catálogo predeterminado nuevo y vuelve a cargar la lista de plantillas.</translation>
                 </translations>
               </property>
             </properties>
@@ -747,11 +759,11 @@
           <item name="ESPHomeShared_rsInvalidProjectFile">
             <properties>
               <property>
-                <value>"%s" is an invalid ESPHome project file.</value>
+                <value>The selected file &quot;%s&quot; cannot be added as an ESPHome project.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selected file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">"%s" is an invalid ESPHome project file.</translation>
-                  <translation language="it" status="proposed">"%s" è un file di progetto ESPHome non valido.</translation>
-                  <translation language="es" status="proposed">«%s» es un archivo de proyecto de ESPHome no válido.</translation>
+                  <translation language="en">The selected file &quot;%s&quot; cannot be added as an ESPHome project.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selected file: &quot;%s&quot;</translation>
+                  <translation language="it" status="proposed">Il file selezionato &quot;%s&quot; non può essere aggiunto come progetto ESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;File selezionato: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">El archivo seleccionado «%s» no se puede añadir como proyecto de ESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo seleccionado: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -759,11 +771,11 @@
           <item name="ESPHomeShared_rsInvalidProjectFile2">
             <properties>
               <property>
-                <value>Valid project files must contains at least a basic ESPHome configuration in the YAML file.</value>
+                <value>NppESPHome could not identify a complete project configuration in this file. Check that the YAML is readable and syntactically valid, that the &quot;esphome&quot; section contains a non-empty &quot;name&quot;, and that one supported platform is configured (esp32, esp8266, bk72xx, ln882x, rp2040, rtl87xx, or host).&amp;#13;&amp;#10;&amp;#13;&amp;#10;The file has not been registered and no project setting has been changed.</value>
                 <translations>
-                  <translation language="en">Valid project files must contains at least a basic ESPHome configuration in the YAML file.</translation>
-                  <translation language="it" status="proposed">I file di progetto validi devono contenere almeno una configurazione ESPHome di base nel file YAML.</translation>
-                  <translation language="es" status="proposed">Los archivos de proyecto válidos deben contener, como mínimo, una configuración básica de ESPHome en el archivo YAML.</translation>
+                  <translation language="en">NppESPHome could not identify a complete project configuration in this file. Check that the YAML is readable and syntactically valid, that the &quot;esphome&quot; section contains a non-empty &quot;name&quot;, and that one supported platform is configured (esp32, esp8266, bk72xx, ln882x, rp2040, rtl87xx, or host).&amp;#13;&amp;#10;&amp;#13;&amp;#10;The file has not been registered and no project setting has been changed.</translation>
+                  <translation language="it" status="proposed">NppESPHome non ha identificato in questo file una configurazione di progetto completa. Controlla che il file YAML sia leggibile e sintatticamente valido, che la sezione &quot;esphome&quot; contenga un &quot;name&quot; non vuoto e che sia configurata una piattaforma supportata (esp32, esp8266, bk72xx, ln882x, rp2040, rtl87xx oppure host).&amp;#13;&amp;#10;&amp;#13;&amp;#10;Il file non è stato registrato e nessuna impostazione del progetto è stata modificata.</translation>
+                  <translation language="es" status="proposed">NppESPHome no ha podido identificar una configuración de proyecto completa en este archivo. Comprueba que el YAML sea legible y sintácticamente válido, que la sección &quot;esphome&quot; contenga un &quot;name&quot; no vacío y que haya una plataforma compatible configurada (esp32, esp8266, bk72xx, ln882x, rp2040, rtl87xx o host).&amp;#13;&amp;#10;&amp;#13;&amp;#10;El archivo no se ha registrado ni se ha cambiado ninguna configuración del proyecto.</translation>
                 </translations>
               </property>
             </properties>
@@ -771,11 +783,11 @@
           <item name="ESPHomeShared_rsKnownProjectRemoval">
             <properties>
               <property>
-                <value>Project "%s" is going to be removed from the projects known list.</value>
+                <value>Remove project &quot;%s&quot; from the projects known to NppESPHome?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Project file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">Project "%s" is going to be removed from the projects known list.</translation>
-                  <translation language="it" status="proposed">Il progetto "%s" verrà rimosso dall'elenco dei progetti noti.</translation>
-                  <translation language="es" status="proposed">El proyecto «%s» va a ser eliminado de la lista de proyectos conocidos.</translation>
+                  <translation language="en">Remove project &quot;%s&quot; from the projects known to NppESPHome?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Project file: &quot;%s&quot;</translation>
+                  <translation language="it" status="proposed">Rimuovere il progetto &quot;%s&quot; dai progetti noti a NppESPHome?&amp;#13;&amp;#10;&amp;#13;&amp;#10;File di progetto: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">¿Quitar el proyecto «%s» de los proyectos conocidos por NppESPHome?&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo del proyecto: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -783,11 +795,11 @@
           <item name="ESPHomeShared_rsKnownProjectRemoval2">
             <properties>
               <property>
-                <value>Project files are preserved.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Are you sure?</value>
+                <value>Only the project registration and its NppESPHome-specific settings will be removed from the plugin configuration. The YAML file and all other project files on disk will remain unchanged.&amp;#13;&amp;#10;&amp;#13;&amp;#10;You can add the project again later. Do you want to continue?</value>
                 <translations>
-                  <translation language="en">Project files are preserved.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Are you sure?</translation>
-                  <translation language="it" status="proposed">I file del progetto verranno conservati.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Sei sicuro?</translation>
-                  <translation language="es" status="proposed">Los archivos del proyecto se conservarán.&amp;#13;&amp;#10;&amp;#13;&amp;#10;¿Estás seguro?</translation>
+                  <translation language="en">Only the project registration and its NppESPHome-specific settings will be removed from the plugin configuration. The YAML file and all other project files on disk will remain unchanged.&amp;#13;&amp;#10;&amp;#13;&amp;#10;You can add the project again later. Do you want to continue?</translation>
+                  <translation language="it" status="proposed">Dalla configurazione del plugin verranno rimossi soltanto la registrazione del progetto e le relative impostazioni specifiche di NppESPHome. Il file YAML e tutti gli altri file del progetto sul disco rimarranno invariati.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Potrai aggiungere nuovamente il progetto in seguito. Vuoi continuare?</translation>
+                  <translation language="es" status="proposed">Solo se quitarán de la configuración del complemento el registro del proyecto y sus ajustes específicos de NppESPHome. El archivo YAML y los demás archivos del proyecto en el disco no cambiarán.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Puedes volver a añadir el proyecto más adelante. ¿Quieres continuar?</translation>
                 </translations>
               </property>
             </properties>
@@ -831,11 +843,11 @@
           <item name="ESPHomeShared_rsProjectAlreadyExists">
             <properties>
               <property>
-                <value>Project "%s" already exists among the configured projects.</value>
+                <value>The ESPHome project &quot;%s&quot; is already registered in NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selected file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">Project "%s" already exists among the configured projects.</translation>
-                  <translation language="it" status="proposed">Il progetto "%s" è già presente tra i progetti configurati.</translation>
-                  <translation language="es" status="proposed">El proyecto «%s» ya existe entre los proyectos configurados.</translation>
+                  <translation language="en">The ESPHome project &quot;%s&quot; is already registered in NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selected file: &quot;%s&quot;</translation>
+                  <translation language="it" status="proposed">Il progetto ESPHome &quot;%s&quot; è già registrato in NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;File selezionato: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">El proyecto de ESPHome «%s» ya está registrado en NppESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo seleccionado: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -843,11 +855,11 @@
           <item name="ESPHomeShared_rsProjectAlreadyExists2">
             <properties>
               <property>
-                <value>Please select another project.</value>
+                <value>No duplicate entry has been added and the current project selection has not been changed.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Select the existing project from the project list, or choose a different YAML file.</value>
                 <translations>
-                  <translation language="en">Please select another project.</translation>
-                  <translation language="it" status="proposed">Seleziona un altro progetto.</translation>
-                  <translation language="es" status="proposed">Selecciona otro proyecto, por favor.</translation>
+                  <translation language="en">No duplicate entry has been added and the current project selection has not been changed.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Select the existing project from the project list, or choose a different YAML file.</translation>
+                  <translation language="it" status="proposed">Non è stata aggiunta alcuna voce duplicata e la selezione del progetto corrente non è stata modificata.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Seleziona il progetto già esistente dall&apos;elenco dei progetti oppure scegli un file YAML diverso.</translation>
+                  <translation language="es" status="proposed">No se ha añadido ninguna entrada duplicada ni se ha cambiado la selección del proyecto actual.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Selecciona el proyecto existente en la lista de proyectos o elige otro archivo YAML.</translation>
                 </translations>
               </property>
             </properties>
@@ -862,11 +874,11 @@
           <item name="ESPHomeShared_rsTemplatesNotFound">
             <properties>
               <property>
-                <value>No "NppESPHome.xml" templates file has been found on your system.</value>
+                <value>The local ESPHome template catalog could not be found.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Expected file: &quot;%s&quot;</value>
                 <translations>
-                  <translation language="en">No "NppESPHome.xml" templates file has been found on your system.</translation>
-                  <translation language="it" status="proposed">Non è stato trovato alcun file di modelli "NppESPHome.xml" nel tuo sistema.</translation>
-                  <translation language="es" status="proposed">No se ha encontrado ningún archivo de plantillas «NppESPHome.xml» en tu sistema.</translation>
+                  <translation language="en">The local ESPHome template catalog could not be found.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Expected file: &quot;%s&quot;</translation>
+                  <translation language="it" status="proposed">Il catalogo locale dei modelli ESPHome non è stato trovato.&amp;#13;&amp;#10;&amp;#13;&amp;#10;File previsto: &quot;%s&quot;</translation>
+                  <translation language="es" status="proposed">No se ha encontrado el catálogo local de plantillas de ESPHome.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Archivo esperado: «%s»</translation>
                 </translations>
               </property>
             </properties>
@@ -874,11 +886,11 @@
           <item name="ESPHomeShared_rsTemplatesNotFound2">
             <properties>
               <property>
-                <value>Do you want to download the default one from GitHub portal?</value>
+                <value>Without this file, the template browser cannot display or insert the predefined ESPHome YAML snippets. NppESPHome can download the current default catalog from the project repository on GitHub.&amp;#13;&amp;#10;&amp;#13;&amp;#10;The download does not modify any ESPHome project file. Do you want to download the catalog now?</value>
                 <translations>
-                  <translation language="en">Do you want to download the default one from GitHub portal?</translation>
-                  <translation language="it" status="proposed">Vuoi scaricare quello predefinito dal portale GitHub?</translation>
-                  <translation language="es" status="proposed">¿Quieres descargar la versión predeterminada desde el portal de GitHub?</translation>
+                  <translation language="en">Without this file, the template browser cannot display or insert the predefined ESPHome YAML snippets. NppESPHome can download the current default catalog from the project repository on GitHub.&amp;#13;&amp;#10;&amp;#13;&amp;#10;The download does not modify any ESPHome project file. Do you want to download the catalog now?</translation>
+                  <translation language="it" status="proposed">Senza questo file, il browser dei modelli non può mostrare o inserire i frammenti YAML predefiniti di ESPHome. NppESPHome può scaricare il catalogo predefinito corrente dal repository del progetto su GitHub.&amp;#13;&amp;#10;&amp;#13;&amp;#10;Il download non modifica alcun file dei progetti ESPHome. Vuoi scaricare ora il catalogo?</translation>
+                  <translation language="es" status="proposed">Sin este archivo, el explorador de plantillas no puede mostrar ni insertar los fragmentos YAML predefinidos de ESPHome. NppESPHome puede descargar el catálogo predeterminado actual desde el repositorio del proyecto en GitHub.&amp;#13;&amp;#10;&amp;#13;&amp;#10;La descarga no modifica ningún archivo de proyecto de ESPHome. ¿Quieres descargar el catálogo ahora?</translation>
                 </translations>
               </property>
             </properties>
@@ -886,11 +898,23 @@
           <item name="ESPHomeShared_rsTemplatesXMLDownloaded">
             <properties>
               <property>
-                <value>Default XML Templates file downloaded from GitHub.</value>
+                <value>The default ESPHome template catalog was downloaded successfully from GitHub.</value>
                 <translations>
-                  <translation language="en">Default XML Templates file downloaded from GitHub.</translation>
-                  <translation language="it" status="proposed">File XML di modelli predefiniti scaricato da GitHub.</translation>
-                  <translation language="es" status="proposed">Archivo de plantillas XML predeterminadas descargado de GitHub.</translation>
+                  <translation language="en">The default ESPHome template catalog was downloaded successfully from GitHub.</translation>
+                  <translation language="it" status="proposed">Il catalogo predefinito dei modelli ESPHome è stato scaricato correttamente da GitHub.</translation>
+                  <translation language="es" status="proposed">El catálogo predeterminado de plantillas de ESPHome se ha descargado correctamente de GitHub.</translation>
+                </translations>
+              </property>
+            </properties>
+          </item>
+          <item name="ESPHomeShared_rsTemplatesXMLDownloaded2">
+            <properties>
+              <property>
+                <value>Saved as: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;NppESPHome will use this local file for the template list.</value>
+                <translations>
+                  <translation language="en">Saved as: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;NppESPHome will use this local file for the template list.</translation>
+                  <translation language="it" status="proposed">Salvato come: &quot;%s&quot;&amp;#13;&amp;#10;&amp;#13;&amp;#10;NppESPHome userà questo file locale per l&apos;elenco dei modelli.</translation>
+                  <translation language="es" status="proposed">Guardado como: «%s»&amp;#13;&amp;#10;&amp;#13;&amp;#10;NppESPHome usará este archivo local para la lista de plantillas.</translation>
                 </translations>
               </property>
             </properties>

@@ -123,26 +123,44 @@ resourcestring
   rsESPHomeDocURL = 'https://www.esphome.io/components/';
 
 resourcestring
-  rsProjectAlreadyExists = 'Project "%s" already exists among the configured projects.';
-  rsProjectAlreadyExists2 = 'Please select another project.';
-  rsInvalidProjectFile = '"%s" is an invalid ESPHome project file.';
-  rsInvalidProjectFile2 = 'Valid project files must contains at least a basic ESPHome configuration in the YAML file.';
-  rsKnownProjectRemoval = 'Project "%s" is going to be removed from the projects known list.';
-  rsKnownProjectRemoval2 = 'Project files are preserved.' + sLineBreak + sLineBreak + 'Are you sure?';
-  rsConfirmOverwriteTemplates = 'You are going to overwrite your "NppESPHome.xml" templates file with the one available on GitHub.';
-  rsConfirmOverwriteTemplates2 = 'Any modification done on the local XML will be lost.';
-  rsConfirmOverwriteTemplates3 = 'Are you sure you want to continue?';
-  rsConfirmOverwriteTemplates4 = 'I am really sure and I want to overwrite my local template file.';
-  rsTemplatesXMLDownloaded = 'Default XML Templates file downloaded from GitHub.';
-  rsConfirmExecuteCleanAll = 'Are you sure you want to run "esphome clean-all" command?';
-  rsConfirmExecuteCleanAll2 = 'You are about to run "esphome clean-all" for project "%s".' + sLineBreak + sLineBreak +
-    'This will remove all ESPHome build files, PlatformIO platforms and packages, ' +
-    'and the PlatformIO core directory related to the selected project or working folder.' + sLineBreak + sLineBreak +
-    'This is useful for a full rebuild, but the next compilation may take a long time.' + sLineBreak + sLineBreak + 'Do you want to continue?';
+  rsProjectAlreadyExists = 'The ESPHome project "%s" is already registered in NppESPHome.' + sLineBreak + sLineBreak +
+    'Selected file: "%s"';
+  rsProjectAlreadyExists2 = 'No duplicate entry has been added and the current project selection has not been changed.' +
+    sLineBreak + sLineBreak + 'Select the existing project from the project list, or choose a different YAML file.';
+  rsInvalidProjectFile = 'The selected file "%s" cannot be added as an ESPHome project.' + sLineBreak + sLineBreak +
+    'Selected file: "%s"';
+  rsInvalidProjectFile2 = 'NppESPHome could not identify a complete project configuration in this file. Check that the YAML is readable and syntactically valid, ' +
+    'that the "esphome" section contains a non-empty "name", and that one supported platform is configured ' +
+    '(esp32, esp8266, bk72xx, ln882x, rp2040, rtl87xx, or host).' + sLineBreak + sLineBreak +
+    'The file has not been registered and no project setting has been changed.';
+  rsKnownProjectRemoval = 'Remove project "%s" from the projects known to NppESPHome?' + sLineBreak + sLineBreak +
+    'Project file: "%s"';
+  rsKnownProjectRemoval2 = 'Only the project registration and its NppESPHome-specific settings will be removed from the plugin configuration. ' +
+    'The YAML file and all other project files on disk will remain unchanged.' + sLineBreak + sLineBreak +
+    'You can add the project again later. Do you want to continue?';
+  rsConfirmOverwriteTemplates = 'Replace the local ESPHome template catalog with the current default catalog from GitHub?' +
+    sLineBreak + sLineBreak + 'Local file: "%s"';
+  rsConfirmOverwriteTemplates2 = 'The existing file will be overwritten. Every local template, edit, or customization stored only in this XML file will be permanently lost.';
+  rsConfirmOverwriteTemplates3 = 'Create a backup first if you may need those changes. After the download, NppESPHome will reload the replacement catalog.' +
+    sLineBreak + sLineBreak + 'Do you want to continue?';
+  rsConfirmOverwriteTemplates4 = 'I understand that all local changes in NppESPHome.xml will be lost, and I want to replace the file.';
+  rsTemplatesXMLDownloaded = 'The default ESPHome template catalog was downloaded successfully from GitHub.';
+  rsTemplatesXMLDownloaded2 = 'Saved as: "%s"' + sLineBreak + sLineBreak +
+    'NppESPHome will use this local file for the template list.';
+  rsConfirmExecuteCleanAll = 'Delete all ESPHome and PlatformIO build caches used by this project?';
+  rsConfirmExecuteCleanAll2 = 'NppESPHome is about to run "esphome clean-all" for project "%s".' + sLineBreak +
+    'Project file: "%s"' + sLineBreak + sLineBreak +
+    'This removes generated ESPHome build files, PlatformIO platforms and packages, and the related PlatformIO core directory. ' +
+    'The project YAML, dependency files, and other source files will not be deleted or modified.' + sLineBreak + sLineBreak +
+    'The next compilation will recreate or download the required build data and may therefore take considerably longer. ' +
+    'The deleted cache contents cannot be restored by NppESPHome.' + sLineBreak + sLineBreak + 'Do you want to continue?';
 
 resourcestring
-  rsTemplatesNotFound = 'No "NppESPHome.xml" templates file has been found on your system.';
-  rsTemplatesNotFound2 = 'Do you want to download the default one from GitHub portal?';
+  rsTemplatesNotFound = 'The local ESPHome template catalog could not be found.' + sLineBreak + sLineBreak +
+    'Expected file: "%s"';
+  rsTemplatesNotFound2 = 'Without this file, the template browser cannot display or insert the predefined ESPHome YAML snippets. ' +
+    'NppESPHome can download the current default catalog from the project repository on GitHub.' + sLineBreak + sLineBreak +
+    'The download does not modify any ESPHome project file. Do you want to download the catalog now?';
 
 type
   PProject = ^TProject;
@@ -793,10 +811,13 @@ begin
   if not FileExists(TemplateFile) then
   begin
     // Show a dialog asking to download the default templates
-    if TD(rsTemplatesNotFound).WindowCaption(rsMessageBoxWarning).Text(rsTemplatesNotFound2).Warning.YesNo.SetFlags([tfAllowDialogCancellation]).Execute(nil) = mrYes then
+    if TD(Format(rsTemplatesNotFound, [AFileName])).WindowCaption(rsMessageBoxWarning).
+      Text(rsTemplatesNotFound2).Warning.YesNo.DefButton(tcbYes).
+      AddFlag(tfAllowDialogCancellation).Execute(Plugin.NppData.NppHandle) = mrYes then
     begin
       DownloadTemplateFileFromGitHub;
-      TD(rsTemplatesXMLDownloaded).WindowCaption(rsMessageBoxInfo).Info.OK.SetFlags([tfAllowDialogCancellation]).Execute(nil);
+      TD(rsTemplatesXMLDownloaded).Text(Format(rsTemplatesXMLDownloaded2, [AFileName])).
+        WindowCaption(rsMessageBoxInfo).Info.OK.Execute(Plugin.NppData.NppHandle);
     end;
   end;
 
@@ -810,7 +831,10 @@ begin
 end;
 
 resourcestring
-  rsErrorReadingTemplateFile = 'The following error has been encountered reading the XML Template file:';
+  rsErrorReadingTemplateFile = 'NppESPHome could not load the local ESPHome template catalog.';
+  rsErrorReadingTemplateFile2 = 'File: "%s"' + sLineBreak + sLineBreak + 'Technical details: %s' + sLineBreak + sLineBreak +
+    'The template list has been left empty to avoid using incomplete data. Check that the file is readable and contains well-formed XML, ' +
+    'then correct it or download a fresh default catalog and reload the template list.';
 
 // *****************************************************************************
 // Purpose: Parses the NppESPHome.xml file, extracting the template Name,
@@ -851,7 +875,8 @@ begin
     except
       on E: Exception do
         // Display parse errors (e.g., malformed XML) to the user
-        TD(rsErrorReadingTemplateFile).Text(Format('%s', [E.Message])).WindowCaption(rsMessageBoxError).Error.OK.SetFlags([tfAllowDialogCancellation]).Execute(nil);
+        TD(rsErrorReadingTemplateFile).Text(Format(rsErrorReadingTemplateFile2, [TemplateFile, E.Message])).
+          WindowCaption(rsMessageBoxError).Error.OK.Execute(Plugin.NppData.NppHandle);
     end;
   end;
 end;

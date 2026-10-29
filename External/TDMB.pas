@@ -54,12 +54,15 @@ type
     FLinkHandler: TLinkHandler;
     FRadioOut: Integer;
     FVerificationClicked: TNotifyEventRef;
+    function ExecuteCore(AOwnerForm: TCustomForm;
+      AOwnerHandle: HWND): TModalResult;
     procedure HyperlinkClicked(Sender: TObject);
     procedure VerificationClicked(Sender: TObject);
     procedure MOPDialogCreated(Sender: TObject);
   public
     const DefaultFlags = [tfAllowDialogCancellation, tfPositionRelativeToWindow];
     function Execute(AOwnerForm: TCustomForm = nil): TModalResult; overload;
+    function Execute(AOwnerHandle: HWND): TModalResult; overload;
     function Execute(out ARadioButton: Integer; AOwnerForm: TCustomForm = nil): TModalResult; overload;
     function Text(const AText: string): TMsgBox;
     function TextFmt(const AText: string; const Args: array of const): TMsgBox;
@@ -229,14 +232,25 @@ end;
 
 function TMsgBox.Execute(AOwnerForm: TCustomForm): TModalResult;
 begin
+  if Assigned(AOwnerForm) then
+    Result := ExecuteCore(AOwnerForm, AOwnerForm.Handle)
+  else
+    Result := ExecuteCore(nil, 0);
+end;
+
+function TMsgBox.Execute(AOwnerHandle: HWND): TModalResult;
+begin
+  Result := ExecuteCore(nil, AOwnerHandle);
+end;
+
+function TMsgBox.ExecuteCore(AOwnerForm: TCustomForm;
+  AOwnerHandle: HWND): TModalResult;
+begin
 
   var TD := TTaskDialog2.Create(AOwnerForm);
   try
     TD.FMsgBoxData := @Self;
-    if Assigned(AOwnerForm) then
-      FOwner := AOwnerForm.Handle
-    else
-      FOwner := 0;
+    FOwner := AOwnerHandle;
     TD.Flags := FFlags;
     if not FCaption.IsEmpty then
       TD.Caption := FCaption
