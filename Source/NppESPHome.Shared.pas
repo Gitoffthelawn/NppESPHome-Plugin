@@ -1044,7 +1044,10 @@ var
         Doc := TYamlDocument.Load(ExpandedFileName);
         if not Assigned(Doc) then
         begin
-          IncludeChainValid := False;
+          // Neslib.Yaml returns nil for an empty file. ESPHome accepts an
+          // empty included package as a valid no-op, so it must not invalidate
+          // the entire project include chain. An empty main file still fails
+          // the final name and microcontroller checks.
           Exit;
         end;
 
