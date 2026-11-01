@@ -19,7 +19,7 @@ uses
   Vcl.VirtualImageList,
   Npp.Plugin,
   Npp.Toolbar,
-  Npp.Vcl.Forms, System.ImageList, Vcl.ImgList;
+  Npp.Vcl.Forms, System.ImageList, Vcl.ImgList, Vcl.ExtCtrls;
 
 type
   // Node order defines toolbar order; checked state defines visibility.
@@ -32,6 +32,7 @@ type
     ButtonCancel: TButton;
     ButtonApply: TButton;
     ButtonReset: TButton;
+    PanelButtons: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure TreeViewToolbarDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);

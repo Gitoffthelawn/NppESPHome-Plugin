@@ -4,8 +4,8 @@ object FormToolbar: TFormToolbar
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Toolbar configuration'
-  ClientHeight = 654
-  ClientWidth = 421
+  ClientHeight = 665
+  ClientWidth = 418
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,7 @@ object FormToolbar: TFormToolbar
   TextHeight = 15
   object LabelInfo: TLabel
     Left = 9
-    Top = 561
+    Top = 586
     Width = 402
     Height = 33
     Margins.Left = 4
@@ -34,7 +34,7 @@ object FormToolbar: TFormToolbar
     Left = 9
     Top = 9
     Width = 403
-    Height = 544
+    Height = 569
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -56,44 +56,55 @@ object FormToolbar: TFormToolbar
     OnMouseDown = TreeViewToolbarMouseDown
     OnStartDrag = TreeViewToolbarStartDrag
   end
-  object ButtonOk: TButton
-    Left = 160
-    Top = 618
-    Width = 75
-    Height = 25
-    Caption = 'Ok'
-    Default = True
-    ModalResult = 1
-    TabOrder = 2
-    OnClick = ButtonSaveClick
-  end
-  object ButtonCancel: TButton
-    Left = 337
-    Top = 618
-    Width = 75
-    Height = 25
-    Cancel = True
-    Caption = 'Cancel'
-    ModalResult = 2
-    TabOrder = 4
-  end
-  object ButtonApply: TButton
-    Left = 241
-    Top = 618
-    Width = 75
-    Height = 25
-    Caption = '&Apply'
-    TabOrder = 3
-    OnClick = ButtonSaveClick
-  end
-  object ButtonReset: TButton
-    Left = 9
-    Top = 618
-    Width = 96
-    Height = 25
-    Caption = '&Reset toolbar'
+  object PanelButtons: TPanel
+    Left = 0
+    Top = 632
+    Width = 418
+    Height = 33
+    Align = alBottom
+    BevelOuter = bvNone
     TabOrder = 1
-    OnClick = ButtonResetClick
+    ExplicitTop = 992
+    ExplicitWidth = 705
+    object ButtonApply: TButton
+      Left = 241
+      Top = 2
+      Width = 75
+      Height = 25
+      Caption = '&Apply'
+      TabOrder = 0
+      OnClick = ButtonSaveClick
+    end
+    object ButtonCancel: TButton
+      Left = 337
+      Top = 2
+      Width = 75
+      Height = 25
+      Cancel = True
+      Caption = 'Cancel'
+      ModalResult = 2
+      TabOrder = 1
+    end
+    object ButtonOk: TButton
+      Left = 160
+      Top = 2
+      Width = 75
+      Height = 25
+      Caption = 'Ok'
+      Default = True
+      ModalResult = 1
+      TabOrder = 2
+      OnClick = ButtonSaveClick
+    end
+    object ButtonReset: TButton
+      Left = 9
+      Top = 2
+      Width = 96
+      Height = 25
+      Caption = '&Reset toolbar'
+      TabOrder = 3
+      OnClick = ButtonResetClick
+    end
   end
   object VirtualImageList: TVirtualImageList
     AutoFill = True

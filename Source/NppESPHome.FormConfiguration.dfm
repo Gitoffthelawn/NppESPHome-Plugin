@@ -4,22 +4,22 @@ object FormConfig: TFormConfig
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Project Configuration'
-  ClientHeight = 611
-  ClientWidth = 908
+  ClientHeight = 580
+  ClientWidth = 911
   Color = clBtnFace
   ParentFont = True
   ShowHint = True
   OnCreate = FormCreate
   TextHeight = 15
   object GroupBoxProject: TGroupBox
-    Left = 11
+    Left = 8
     Top = 8
     Width = 889
-    Height = 82
+    Height = 89
     TabOrder = 0
     object VirtualImageMC: TVirtualImage
-      Left = 14
-      Top = 5
+      Left = 11
+      Top = 8
       Width = 71
       Height = 72
       Center = True
@@ -29,7 +29,7 @@ object FormConfig: TFormConfig
     end
     object LabelProjectSummaryName: TLabel
       Left = 93
-      Top = 5
+      Top = 9
       Width = 638
       Height = 32
       AutoSize = False
@@ -43,7 +43,7 @@ object FormConfig: TFormConfig
     end
     object LabelProjectSummaryFile: TLabel
       Left = 93
-      Top = 27
+      Top = 32
       Width = 638
       Height = 15
       AutoSize = False
@@ -57,22 +57,16 @@ object FormConfig: TFormConfig
     end
     object PanelProjectBadges: TPanel
       Left = 91
-      Top = 42
-      Width = 640
-      Height = 34
+      Top = 51
+      Width = 774
+      Height = 27
       BevelOuter = bvNone
       TabOrder = 0
       object PanelProjectMicrocontroller: TPanel
-        AlignWithMargins = True
-        Left = 2
-        Top = 5
+        Left = 0
+        Top = 4
         Width = 56
-        Height = 24
-        Margins.Left = 2
-        Margins.Top = 5
-        Margins.Right = 2
-        Margins.Bottom = 5
-        Align = alLeft
+        Height = 20
         BevelOuter = bvNone
         Caption = 'ESP32'
         Color = clWindow
@@ -84,20 +78,29 @@ object FormConfig: TFormConfig
         ParentBackground = False
         ParentFont = False
         TabOrder = 0
-        ExplicitLeft = -19
-        ExplicitTop = 8
+      end
+      object PanelProjectMCUVariant: TPanel
+        Left = 60
+        Top = 4
+        Width = 70
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'ESP32-S3'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 1
       end
       object PanelProjectBoard: TPanel
-        AlignWithMargins = True
-        Left = 62
-        Top = 5
+        Left = 134
+        Top = 4
         Width = 95
-        Height = 24
-        Margins.Left = 2
-        Margins.Top = 5
-        Margins.Right = 2
-        Margins.Bottom = 5
-        Align = alLeft
+        Height = 20
         BevelOuter = bvNone
         Caption = 'Board'
         Color = clWindow
@@ -108,20 +111,13 @@ object FormConfig: TFormConfig
         Font.Style = []
         ParentBackground = False
         ParentFont = False
-        TabOrder = 1
-        ExplicitLeft = 0
+        TabOrder = 2
       end
       object PanelProjectFramework: TPanel
-        AlignWithMargins = True
-        Left = 161
-        Top = 5
+        Left = 233
+        Top = 4
         Width = 65
-        Height = 24
-        Margins.Left = 2
-        Margins.Top = 5
-        Margins.Right = 2
-        Margins.Bottom = 5
-        Align = alLeft
+        Height = 20
         BevelOuter = bvNone
         Caption = 'Framework'
         Color = clWindow
@@ -132,19 +128,13 @@ object FormConfig: TFormConfig
         Font.Style = []
         ParentBackground = False
         ParentFont = False
-        TabOrder = 2
+        TabOrder = 3
       end
       object PanelProjectWiFi: TPanel
-        AlignWithMargins = True
-        Left = 230
-        Top = 5
+        Left = 302
+        Top = 4
         Width = 46
-        Height = 24
-        Margins.Left = 2
-        Margins.Top = 5
-        Margins.Right = 2
-        Margins.Bottom = 5
-        Align = alLeft
+        Height = 20
         BevelOuter = bvNone
         Caption = 'Wi-Fi'
         Color = clWindow
@@ -155,21 +145,15 @@ object FormConfig: TFormConfig
         Font.Style = []
         ParentBackground = False
         ParentFont = False
-        TabOrder = 3
+        TabOrder = 4
       end
-      object PanelProjectWebServer: TPanel
-        AlignWithMargins = True
-        Left = 280
-        Top = 5
-        Width = 78
-        Height = 24
-        Margins.Left = 2
-        Margins.Top = 5
-        Margins.Right = 2
-        Margins.Bottom = 5
-        Align = alLeft
+      object PanelProjectEthernet: TPanel
+        Left = 352
+        Top = 4
+        Width = 61
+        Height = 20
         BevelOuter = bvNone
-        Caption = 'Web server'
+        Caption = 'Ethernet'
         Color = clWindow
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clGrayText
@@ -178,12 +162,114 @@ object FormConfig: TFormConfig
         Font.Style = []
         ParentBackground = False
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 5
+      end
+      object PanelProjectWebServer: TPanel
+        Left = 417
+        Top = 4
+        Width = 78
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'Web Server'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 6
+      end
+      object PanelProjectNativeAPI: TPanel
+        Left = 499
+        Top = 4
+        Width = 34
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'API'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 7
+      end
+      object PanelProjectMQTT: TPanel
+        Left = 537
+        Top = 4
+        Width = 43
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'MQTT'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 8
+      end
+      object PanelProjectOTA: TPanel
+        Left = 584
+        Top = 4
+        Width = 34
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'OTA'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 9
+      end
+      object PanelProjectCaptivePortal: TPanel
+        Left = 0
+        Top = 28
+        Width = 91
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'Captive portal'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 10
+      end
+      object PanelProjectLogger: TPanel
+        Left = 95
+        Top = 28
+        Width = 50
+        Height = 20
+        BevelOuter = bvNone
+        Caption = 'Logger'
+        Color = clWindow
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 11
       end
     end
     object LinkLabelProjectFile: TLinkLabel
       Left = 754
-      Top = 18
+      Top = 26
       Width = 104
       Height = 19
       Caption = '<a>Open project file '#8599'</a>'
@@ -198,7 +284,7 @@ object FormConfig: TFormConfig
     end
     object LinkLabelProjectFolder: TLinkLabel
       Left = 754
-      Top = 40
+      Top = 48
       Width = 119
       Height = 19
       Caption = '<a>Open project folder '#8599'</a>'
@@ -214,20 +300,19 @@ object FormConfig: TFormConfig
   end
   object GroupBoxOptions: TGroupBox
     Left = 8
-    Top = 112
+    Top = 103
     Width = 889
-    Height = 434
-    Caption = 'Options'
+    Height = 418
     TabOrder = 1
     object BevelVerticalSeparator: TBevel
-      Left = 210
-      Top = 27
-      Width = 2
-      Height = 390
+      Left = 209
+      Top = 1
+      Width = 1
+      Height = 416
     end
     object CardPanelOptions: TCardPanel
       Left = 223
-      Top = 23
+      Top = 11
       Width = 655
       Height = 394
       ActiveCard = CardProjectOptions
@@ -244,6 +329,7 @@ object FormConfig: TFormConfig
         CardIndex = 0
         ParentColor = True
         TabOrder = 2
+        ExplicitHeight = 393
         object LabelProjectTitle: TLabel
           Left = 8
           Top = 5
@@ -351,9 +437,9 @@ object FormConfig: TFormConfig
             Top = 241
             Width = 90
             Height = 27
-            Hint =
-              'Remove all dependency associations from the current project wit' +
-              'hout deleting any file from disk'
+            Hint = 
+              'Remove all dependency associations from the current project with' +
+              'out deleting any file from disk'
             Caption = 'Clear all'
             TabOrder = 4
             OnClick = ButtonClearDepsClick
@@ -2071,9 +2157,9 @@ object FormConfig: TFormConfig
     end
     object CategoryButtons: TCategoryButtons
       Left = 3
-      Top = 15
+      Top = 2
       Width = 206
-      Height = 416
+      Height = 405
       BevelEdges = []
       BevelInner = bvNone
       BevelOuter = bvNone
@@ -2148,19 +2234,19 @@ object FormConfig: TFormConfig
   end
   object PanelButtons: TPanel
     Left = 0
-    Top = 560
-    Width = 908
+    Top = 529
+    Width = 911
     Height = 51
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 552
+    ExplicitTop = 570
     ExplicitWidth = 906
     DesignSize = (
-      908
+      911
       51)
     object ButtonClose: TButton
-      Left = 789
+      Left = 792
       Top = 7
       Width = 101
       Height = 29

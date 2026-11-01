@@ -173,10 +173,17 @@ type
     FName: string;
     FFriendlyName: string;
     FMicrocontroller: string;
+    FMCUVariant: string;
     FBoard: string;
     FFramework: string;
     FHasWiFi: Boolean;
+    FHasEthernet: Boolean;
     FHasWebServer: Boolean;
+    FHasNativeAPI: Boolean;
+    FHasMQTT: Boolean;
+    FHasOTA: Boolean;
+    FHasCaptivePortal: Boolean;
+    FHasLogger: Boolean;
     FValid: Boolean;
     FOptionDeps: TStringList; // List of file dependencies for this project
     function GetUIName: string;
@@ -197,10 +204,17 @@ type
     property UIName: string read GetUIName;
     property FriendlyName: string read GetFriendlyName;
     property Microcontroller: string read FMicrocontroller;
+    property MCUVariant: string read FMCUVariant;
     property Board: string read FBoard;
     property Framework: string read FFramework;
     property HasWiFi: Boolean read FHasWiFi;
+    property HasEthernet: Boolean read FHasEthernet;
     property HasWebServer: Boolean read FHasWebServer;
+    property HasNativeAPI: Boolean read FHasNativeAPI;
+    property HasMQTT: Boolean read FHasMQTT;
+    property HasOTA: Boolean read FHasOTA;
+    property HasCaptivePortal: Boolean read FHasCaptivePortal;
+    property HasLogger: Boolean read FHasLogger;
     property Description: string read GetDescription;
     property IsValid: Boolean read FValid; // True if parsed successfully
 
@@ -402,10 +416,18 @@ var
   PlatformDepth: array[0..PlatformCount - 1] of Integer;
   BoardDepth: array[0..PlatformCount - 1] of Integer;
   FrameworkDepth: array[0..PlatformCount - 1] of Integer;
+  VariantDepth: array[0..PlatformCount - 1] of Integer;
   PlatformBoard: array[0..PlatformCount - 1] of string;
   PlatformFramework: array[0..PlatformCount - 1] of string;
+  PlatformVariant: array[0..PlatformCount - 1] of string;
   WiFiDepth: Integer;
+  EthernetDepth: Integer;
   WebServerDepth: Integer;
+  NativeAPIDepth: Integer;
+  MQTTDepth: Integer;
+  OTADepth: Integer;
+  CaptivePortalDepth: Integer;
+  LoggerDepth: Integer;
   Index: Integer;
   SelectedPlatform: Integer;
   RootFileName: string;
@@ -484,6 +506,62 @@ var
       if SameText(Value, PlatformNames[PlatformIndex]) then
         Exit(PlatformIndex);
     Result := -1;
+  end;
+
+  function NormalizeMCUVariant(const Microcontroller, Variant,
+    Board: string): string;
+  var
+    Normalized: string;
+  begin
+    Normalized := LowerCase(Trim(Variant));
+    Normalized := Normalized.Replace('-', '').Replace('_', '').Replace(' ', '');
+
+    // Most ESP32 projects specify only a board. Infer the MCU family from the
+    // board name when the optional ESPHome "variant" key is absent.
+    if (Normalized = '') and SameText(Microcontroller, 'esp32') then
+    begin
+      Normalized := LowerCase(Board).Replace('-', '').Replace('_', '')
+        .Replace(' ', '');
+      if Pos('esp32s2', Normalized) > 0 then
+        Normalized := 'esp32s2'
+      else if Pos('esp32s3', Normalized) > 0 then
+        Normalized := 'esp32s3'
+      else if Pos('esp32c2', Normalized) > 0 then
+        Normalized := 'esp32c2'
+      else if Pos('esp32c3', Normalized) > 0 then
+        Normalized := 'esp32c3'
+      else if Pos('esp32c5', Normalized) > 0 then
+        Normalized := 'esp32c5'
+      else if Pos('esp32c6', Normalized) > 0 then
+        Normalized := 'esp32c6'
+      else if Pos('esp32h2', Normalized) > 0 then
+        Normalized := 'esp32h2'
+      else if Pos('esp32p4', Normalized) > 0 then
+        Normalized := 'esp32p4'
+      else
+        Normalized := '';
+    end;
+
+    if Normalized = 'esp32s2' then
+      Result := 'ESP32-S2'
+    else if Normalized = 'esp32s3' then
+      Result := 'ESP32-S3'
+    else if Normalized = 'esp32c2' then
+      Result := 'ESP32-C2'
+    else if Normalized = 'esp32c3' then
+      Result := 'ESP32-C3'
+    else if Normalized = 'esp32c5' then
+      Result := 'ESP32-C5'
+    else if Normalized = 'esp32c6' then
+      Result := 'ESP32-C6'
+    else if Normalized = 'esp32h2' then
+      Result := 'ESP32-H2'
+    else if Normalized = 'esp32p4' then
+      Result := 'ESP32-P4'
+    else if (Normalized = '') or SameText(Normalized, Microcontroller) then
+      Result := ''
+    else
+      Result := UpperCase(Trim(Variant));
   end;
 
   procedure AssignTextValue(var Target: string; var TargetDepth: Integer;
@@ -860,8 +938,26 @@ var
             if SameText(Key, 'wifi') then
               AssignFeatureValue(FHasWiFi, WiFiDepth,
                 not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'ethernet') then
+              AssignFeatureValue(FHasEthernet, EthernetDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
             else if SameText(Key, 'web_server') then
               AssignFeatureValue(FHasWebServer, WebServerDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'api') then
+              AssignFeatureValue(FHasNativeAPI, NativeAPIDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'mqtt') then
+              AssignFeatureValue(FHasMQTT, MQTTDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'ota') then
+              AssignFeatureValue(FHasOTA, OTADepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'captive_portal') then
+              AssignFeatureValue(FHasCaptivePortal, CaptivePortalDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'logger') then
+              AssignFeatureValue(FHasLogger, LoggerDepth,
                 not SameText(ValueNode.Tag, '!remove'), Depth);
           end;
 
@@ -880,6 +976,9 @@ var
             if SameText(Key, 'board') then
               AssignTextValue(PlatformBoard[PlatformIndex],
                 BoardDepth[PlatformIndex], ValueNode, Variables, Depth)
+            else if SameText(Key, 'variant') then
+              AssignTextValue(PlatformVariant[PlatformIndex],
+                VariantDepth[PlatformIndex], ValueNode, Variables, Depth)
             else if SameText(Key, 'framework') and ValueNode.IsScalar and
               not SameText(ValueNode.Tag, '!include') then
               AssignTextValue(PlatformFramework[PlatformIndex],
@@ -976,12 +1075,19 @@ begin
   NameDepth := High(Integer);
   FriendlyNameDepth := High(Integer);
   WiFiDepth := High(Integer);
+  EthernetDepth := High(Integer);
   WebServerDepth := High(Integer);
+  NativeAPIDepth := High(Integer);
+  MQTTDepth := High(Integer);
+  OTADepth := High(Integer);
+  CaptivePortalDepth := High(Integer);
+  LoggerDepth := High(Integer);
   for Index := 0 to PlatformCount - 1 do
   begin
     PlatformDepth[Index] := High(Integer);
     BoardDepth[Index] := High(Integer);
     FrameworkDepth[Index] := High(Integer);
+    VariantDepth[Index] := High(Integer);
   end;
 
   ActiveFiles := TStringList.Create;
@@ -1002,6 +1108,8 @@ begin
       FMicrocontroller := PlatformNames[SelectedPlatform];
       FBoard := PlatformBoard[SelectedPlatform];
       FFramework := PlatformFramework[SelectedPlatform];
+      FMCUVariant := NormalizeMCUVariant(FMicrocontroller,
+        PlatformVariant[SelectedPlatform], FBoard);
     end;
 
     FValid := IncludeChainValid and (FName <> '') and

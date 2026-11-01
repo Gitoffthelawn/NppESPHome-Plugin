@@ -26,6 +26,7 @@ type
     LinkLabel3: TLinkLabel;
     VirtualImageLogo: TVirtualImage;
     ImageCollection: TImageCollection;
+    PanelButtons: TPanel;
 
     // Form lifecycle
     procedure FormCreate(Sender: TObject);

@@ -23,10 +23,17 @@ type
     LabelProjectSummaryFile: TLabel;
     PanelProjectBadges: TPanel;
     PanelProjectMicrocontroller: TPanel;
+    PanelProjectMCUVariant: TPanel;
     PanelProjectBoard: TPanel;
     PanelProjectFramework: TPanel;
     PanelProjectWiFi: TPanel;
+    PanelProjectEthernet: TPanel;
     PanelProjectWebServer: TPanel;
+    PanelProjectNativeAPI: TPanel;
+    PanelProjectMQTT: TPanel;
+    PanelProjectOTA: TPanel;
+    PanelProjectCaptivePortal: TPanel;
+    PanelProjectLogger: TPanel;
     LinkLabelProjectFile: TLinkLabel;
     VirtualImageList: TVirtualImageList;
     FileOpenDialogDependency: TFileOpenDialog;
@@ -218,6 +225,7 @@ type
     procedure LinkLabelProjectFolderLinkClick(Sender: TObject;
       const Link: string; LinkType: TSysLinkType);
   private
+    procedure LayoutProjectBadges;
     procedure PopulateComboDevice;
   public
     { Public declarations }
@@ -255,9 +263,10 @@ end;
 procedure ConfigureProjectBadge(Panel: TPanel; const Caption, Hint: string;
   const Visible: Boolean);
 const
-  HorizontalPadding = 16;
-  MinimumWidth = 40;
-  MaximumWidth = 145;
+  BadgeHeight = 20;
+  HorizontalPadding = 12;
+  MinimumWidth = 32;
+  MaximumWidth = 150;
 var
   TextCanvas: TControlCanvas;
 begin
@@ -267,6 +276,7 @@ begin
 
   Panel.Caption := Caption;
   Panel.Hint := Hint;
+  Panel.Height := BadgeHeight;
   TextCanvas := TControlCanvas.Create;
   try
     TextCanvas.Control := Panel;
@@ -277,6 +287,74 @@ begin
     TextCanvas.Free;
   end;
   SetRoundedPanel(Panel, Panel.Height);
+end;
+
+function FormatMicrocontroller(const Value: string): string;
+begin
+  if SameText(Value, 'bk72xx') then
+    Result := 'BK72xx'
+  else if SameText(Value, 'ln882x') then
+    Result := 'LN882x'
+  else if SameText(Value, 'rtl87xx') then
+    Result := 'RTL87xx'
+  else if SameText(Value, 'host') then
+    Result := 'Host'
+  else
+    Result := UpperCase(Value);
+end;
+
+function FormatFramework(const Value: string): string;
+begin
+  if SameText(Value, 'esp-idf') or SameText(Value, 'espidf') then
+    Result := 'ESP-IDF'
+  else if SameText(Value, 'arduino') then
+    Result := 'Arduino'
+  else if SameText(Value, 'zephyr') then
+    Result := 'Zephyr'
+  else
+    Result := Value;
+end;
+
+// Places only the available project badges, preserving their semantic order
+// and wrapping them to a second row when the header cannot contain one line.
+procedure TFormConfig.LayoutProjectBadges;
+const
+  HorizontalGap = 4;
+  VerticalGap = 4;
+  TopOffset = 4;
+var
+  Badges: array[0..11] of TPanel;
+  Badge: TPanel;
+  X: Integer;
+  Y: Integer;
+begin
+  Badges[0] := PanelProjectMicrocontroller;
+  Badges[1] := PanelProjectMCUVariant;
+  Badges[2] := PanelProjectBoard;
+  Badges[3] := PanelProjectFramework;
+  Badges[4] := PanelProjectWiFi;
+  Badges[5] := PanelProjectEthernet;
+  Badges[6] := PanelProjectWebServer;
+  Badges[7] := PanelProjectNativeAPI;
+  Badges[8] := PanelProjectMQTT;
+  Badges[9] := PanelProjectOTA;
+  Badges[10] := PanelProjectCaptivePortal;
+  Badges[11] := PanelProjectLogger;
+
+  X := 0;
+  Y := TopOffset;
+  for Badge in Badges do
+    if Badge.Visible then
+    begin
+      if (X > 0) and (X + Badge.Width > PanelProjectBadges.ClientWidth) then
+      begin
+        X := 0;
+        Inc(Y, Badge.Height + VerticalGap);
+      end;
+      Badge.SetBounds(X, Y, Badge.Width, Badge.Height);
+      SetRoundedPanel(Badge, Badge.Height);
+      Inc(X, Badge.Width + HorizontalGap);
+    end;
 end;
 
 // *****************************************************************************
@@ -780,23 +858,41 @@ begin
     ProjectList.Current.FileName);
 
   ConfigureProjectBadge(PanelProjectMicrocontroller,
-    UpperCase(ProjectList.Current.Microcontroller), 'Microcontroller',
+    FormatMicrocontroller(ProjectList.Current.Microcontroller),
+    'Microcontroller',
     ProjectList.Current.Microcontroller <> '');
+  ConfigureProjectBadge(PanelProjectMCUVariant,
+    ProjectList.Current.MCUVariant, 'Microcontroller variant',
+    ProjectList.Current.MCUVariant <> '');
   ConfigureProjectBadge(PanelProjectBoard, ProjectList.Current.Board, 'Board',
     ProjectList.Current.Board <> '');
-  ConfigureProjectBadge(PanelProjectFramework, ProjectList.Current.Framework,
-    'Framework', ProjectList.Current.Framework <> '');
+  ConfigureProjectBadge(PanelProjectFramework,
+    FormatFramework(ProjectList.Current.Framework), 'Framework',
+    ProjectList.Current.Framework <> '');
   ConfigureProjectBadge(PanelProjectWiFi, 'Wi-Fi', 'Wi-Fi enabled',
     ProjectList.Current.HasWiFi);
-  ConfigureProjectBadge(PanelProjectWebServer, 'Web server',
+  ConfigureProjectBadge(PanelProjectEthernet, 'Ethernet',
+    'Ethernet enabled', ProjectList.Current.HasEthernet);
+  ConfigureProjectBadge(PanelProjectWebServer, 'Web Server',
     'Web server enabled', ProjectList.Current.HasWebServer);
+  ConfigureProjectBadge(PanelProjectNativeAPI, 'API',
+    'ESPHome native API enabled', ProjectList.Current.HasNativeAPI);
+  ConfigureProjectBadge(PanelProjectMQTT, 'MQTT', 'MQTT enabled',
+    ProjectList.Current.HasMQTT);
+  ConfigureProjectBadge(PanelProjectOTA, 'OTA', 'OTA updates enabled',
+    ProjectList.Current.HasOTA);
+  ConfigureProjectBadge(PanelProjectCaptivePortal, 'Captive portal',
+    'Captive portal enabled', ProjectList.Current.HasCaptivePortal);
+  ConfigureProjectBadge(PanelProjectLogger, 'Logger', 'Logger enabled',
+    ProjectList.Current.HasLogger);
+  LayoutProjectBadges;
 
   if ProjectList.Current.GetOption(csKeyConsoleAutoClose, True) then
     ComboBoxOptionConsoleAutoclose.ItemIndex := 1
   else
     ComboBoxOptionConsoleAutoclose.ItemIndex := 0;
 
-  VirtualImageMC.ImageName := 'mc_' + ProjectList.Current.Microcontroller;
+  VirtualImageMC.ImageName := 'mi_' + ProjectList.Current.Microcontroller;
 
   ComboBoxLogLevel.ItemIndex := ProjectList.Current.GetOption(csKeyESPHomeLogLevel, ciLogLevelDefault);
   EditOptionESPHomeAdditionalParameters.Text := ProjectList.Current.GetOption(csKeyESPHomeExtraParameters, csDefaultEmpty);
@@ -922,15 +1018,29 @@ begin
   LabelProjectSummaryFile.Font.Color := TColor(DarkModeColors.DarkerText);
   PanelProjectMicrocontroller.Color :=
     TColor(DarkModeColors.SofterBackground);
+  PanelProjectMCUVariant.Color := TColor(DarkModeColors.SofterBackground);
   PanelProjectBoard.Color := TColor(DarkModeColors.SofterBackground);
   PanelProjectFramework.Color := TColor(DarkModeColors.SofterBackground);
   PanelProjectWiFi.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectEthernet.Color := TColor(DarkModeColors.SofterBackground);
   PanelProjectWebServer.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectNativeAPI.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectMQTT.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectOTA.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectCaptivePortal.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectLogger.Color := TColor(DarkModeColors.SofterBackground);
   PanelProjectMicrocontroller.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectMCUVariant.Font.Color := TColor(DarkModeColors.DarkerText);
   PanelProjectBoard.Font.Color := TColor(DarkModeColors.DarkerText);
   PanelProjectFramework.Font.Color := TColor(DarkModeColors.DarkerText);
   PanelProjectWiFi.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectEthernet.Font.Color := TColor(DarkModeColors.DarkerText);
   PanelProjectWebServer.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectNativeAPI.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectMQTT.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectOTA.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectCaptivePortal.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectLogger.Font.Color := TColor(DarkModeColors.DarkerText);
   LabelProjectTitle.Font.Color := TColor(DarkModeColors.Text);
   LabelProjectDescription.Font.Color := TColor(DarkModeColors.DarkerText);
   GroupBoxProjectDependencies.Font.Color := TColor(DarkModeColors.Text);

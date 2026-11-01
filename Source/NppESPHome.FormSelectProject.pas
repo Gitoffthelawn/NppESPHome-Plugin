@@ -6,15 +6,25 @@ interface
 
 uses
   System.SysUtils, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Npp.Plugin, Npp.Vcl.Forms;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.VirtualImage, Npp.Plugin, Npp.Vcl.Forms;
 
 type
   // Modal dialog that mirrors ProjectList and manages the current selection.
   TFormSelection = class(TNppPluginForm)
+    PanelHeader: TPanel;
+    VirtualImageProject: TVirtualImage;
+    LabelTitle: TLabel;
+    LabelDescription: TLabel;
+    BevelHeader: TBevel;
     GroupBoxCurrentProject: TGroupBox;
+    LabelCurrentProject: TLabel;
+    LabelCurrentProjectDescription: TLabel;
     ComboBoxProject: TComboBox;
+    LabelSelectedProjectPath: TLabel;
     ButtonAddProject: TButton;
     ButtonRemoveProject: TButton;
+    PanelButtons: TPanel;
     ButtonClose: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ComboBoxProjectChange(Sender: TObject);
@@ -23,6 +33,7 @@ type
     procedure ToggleDarkMode; override;
   private
     procedure RefreshComboBox;
+    procedure UpdateProjectDetails;
   public
     { Public declarations }
 
@@ -68,18 +79,26 @@ var
 begin
   inherited ToggleDarkMode;
   AssignWindowIcon(Icon);
-  if (Plugin.IsDarkModeEnabled) then
-  begin
-    DarkModeColors := Default(TNppDarkModeColors);
-    Plugin.GetDarkModeColors(@DarkModeColors);
-    Self.Color := TColor(DarkModeColors.Background);
-    Self.Font.Color := TColor(DarkModeColors.Text);
-  end
-  else
-  begin
-    Self.Color := clBtnFace;
-    Self.Font.Color := clWindowText;
-  end;
+  AssignImageResources(VirtualImageProject);
+
+  DarkModeColors := Default(TNppDarkModeColors);
+  if not (Plugin.IsDarkModeEnabled and
+    Plugin.GetDarkModeColors(@DarkModeColors)) then
+    TNppPlugin.InitializeLightModeColors(DarkModeColors);
+
+  Self.Color := TColor(DarkModeColors.Background);
+  Self.Font.Color := TColor(DarkModeColors.Text);
+  PanelHeader.Color := TColor(DarkModeColors.Background);
+  LabelTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxCurrentProject.Font.Color := TColor(DarkModeColors.Text);
+  LabelCurrentProject.Font.Color := TColor(DarkModeColors.Text);
+  LabelCurrentProjectDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelSelectedProjectPath.Font.Color := TColor(DarkModeColors.DarkerText);
+  ComboBoxProject.Color := TColor(DarkModeColors.SofterBackground);
+  ComboBoxProject.Font.Color := TColor(DarkModeColors.Text);
+  PanelButtons.Color := TColor(DarkModeColors.Background);
 end;
 
 // *****************************************************************************
@@ -90,8 +109,10 @@ procedure TFormSelection.ComboBoxProjectChange(Sender: TObject);
 begin
   inherited;
   if (ComboBoxProject.ItemIndex >= 0) and (ComboBoxProject.Items.Count > 0) then
-    ProjectList.Current := ProjectList.GetProjectFromUIName(ComboBoxProject.Items[ComboBoxProject.ItemIndex]);
+    ProjectList.Current := TProject(
+      ComboBoxProject.Items.Objects[ComboBoxProject.ItemIndex]);
   Plugin.RefreshProjectList;
+  UpdateProjectDetails;
 end;
 
 // *****************************************************************************
@@ -101,6 +122,7 @@ procedure TFormSelection.FormCreate(Sender: TObject);
 begin
   inherited;
   RefreshComboBox;
+  ToggleDarkMode;
 end;
 
 // *****************************************************************************
@@ -109,14 +131,43 @@ end;
 // *****************************************************************************
 procedure TFormSelection.RefreshComboBox;
 var
+  DisplayName: string;
+  ItemIndex: Integer;
   P: TProject;
 begin
   ComboBoxProject.Clear;
   for P in ProjectList do
     if P.IsValid then
-      ComboBoxProject.Items.Add(P.UIName);
-  if Assigned(ProjectList.Current) then
-    ComboBoxProject.ItemIndex := ComboBoxProject.Items.IndexOf(ProjectList.Current.UIName);
+    begin
+      DisplayName := P.FriendlyName;
+      if P.Name <> P.FriendlyName then
+        DisplayName := Format('%s (%s)', [DisplayName, P.Name]);
+      ItemIndex := ComboBoxProject.Items.AddObject(DisplayName, P);
+      if P = ProjectList.Current then
+        ComboBoxProject.ItemIndex := ItemIndex;
+    end;
+  UpdateProjectDetails;
+end;
+
+// *****************************************************************************
+// Purpose: Shows the selected project path and keeps project-specific actions
+// consistent with the current selection.
+// *****************************************************************************
+procedure TFormSelection.UpdateProjectDetails;
+begin
+  if Assigned(ProjectList.Current) and
+    (ComboBoxProject.ItemIndex >= 0) then
+  begin
+    LabelSelectedProjectPath.Caption := ProjectList.Current.FileName;
+    LabelSelectedProjectPath.Hint := ProjectList.Current.FileName;
+    ButtonRemoveProject.Enabled := True;
+  end
+  else
+  begin
+    LabelSelectedProjectPath.Caption := 'No project is currently selected.';
+    LabelSelectedProjectPath.Hint := '';
+    ButtonRemoveProject.Enabled := False;
+  end;
 end;
 
 end.

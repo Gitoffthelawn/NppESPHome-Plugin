@@ -4,8 +4,8 @@ object FormAbout: TFormAbout
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'About...'
-  ClientHeight = 214
-  ClientWidth = 482
+  ClientHeight = 242
+  ClientWidth = 502
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,12 +18,14 @@ object FormAbout: TFormAbout
   object PanelMain: TPanel
     Left = 0
     Top = 0
-    Width = 482
-    Height = 214
+    Width = 502
+    Height = 242
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
+    ExplicitWidth = 480
+    ExplicitHeight = 206
     object LabelAppName1: TLabel
       Left = 246
       Top = 20
@@ -79,17 +81,6 @@ object FormAbout: TFormAbout
       ImageIndex = 0
       ImageName = 'NppESPHome'
     end
-    object ButtonOk: TButton
-      Left = 399
-      Top = 197
-      Width = 75
-      Height = 25
-      Cancel = True
-      Caption = 'OK'
-      Default = True
-      ModalResult = 1
-      TabOrder = 3
-    end
     object LinkLabel1: TLinkLabel
       Left = 246
       Top = 116
@@ -120,6 +111,26 @@ object FormAbout: TFormAbout
         'ad++ Plugins home page</a>'
       TabOrder = 2
       OnLinkClick = LinkLabel3LinkClick
+    end
+    object PanelButtons: TPanel
+      Left = 0
+      Top = 192
+      Width = 502
+      Height = 50
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 3
+      object ButtonOk: TButton
+        Left = 415
+        Top = 8
+        Width = 75
+        Height = 25
+        Cancel = True
+        Caption = 'OK'
+        Default = True
+        ModalResult = 1
+        TabOrder = 0
+      end
     end
   end
   object ImageCollection: TImageCollection

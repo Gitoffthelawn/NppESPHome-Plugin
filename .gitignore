@@ -13,3 +13,4 @@ __Win32
 
 *.xlat.$*
 /Build
+/Resources/.backup
