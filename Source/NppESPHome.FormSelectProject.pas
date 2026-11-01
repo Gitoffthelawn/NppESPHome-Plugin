@@ -15,7 +15,6 @@ type
     ComboBoxProject: TComboBox;
     ButtonAddProject: TButton;
     ButtonRemoveProject: TButton;
-    FileOpenDialogProject: TFileOpenDialog;
     ButtonClose: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ComboBoxProjectChange(Sender: TObject);
@@ -37,76 +36,26 @@ implementation
 {$R *.dfm}
 
 uses
-  NppESPHome.Shared, NppESPHome.Plugin, Npp.Api, Math, TDMB;
+  NppESPHome.Shared, NppESPHome.Plugin, Npp.Api;
 
 // *****************************************************************************
-// Purpose: Adds a selected ESPHome YAML file to the known-project list,
-// rejecting duplicates and invalid files before persisting and refreshing the
-// UI.
+// Purpose: Delegates project creation to the plugin and refreshes the selector.
 // *****************************************************************************
 procedure TFormSelection.ButtonAddProjectClick(Sender: TObject);
-var
-  Project: TProject;
 begin
   inherited;
-  if FileOpenDialogProject.Execute(Self.Handle) then
-  begin
-    // Prevent duplicate entries before constructing a new project object.
-    if Assigned(ProjectList.GetProjectFromFileName(FileOpenDialogProject.FileName)) then
-    begin
-      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName),
-        ExpandFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
-        Text(rsProjectAlreadyExists2).ClearFlag(tfPositionRelativeToWindow).
-        Error.OK.Execute(Self);
-      Exit;
-    end;
-    Project := TProject.Create(FileOpenDialogProject.FileName);
-    if Project.IsValid then
-    begin
-      // A valid project transfers ownership to the object list.
-      ProjectList.Add(Project);
-      ProjectList.Current := Project;
-      ProjectList.SaveConfig;
-      RefreshComboBox;
-      Plugin.RefreshProjectList;
-    end
-    else
-    begin
-      Project.Free;
-      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName),
-        ExpandFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-        ClearFlag(tfPositionRelativeToWindow).Error.OK.Execute(Self);
-    end;
-  end;
+  Plugin.ProjectAdd(Self.Handle);
+  RefreshComboBox;
 end;
 
 // *****************************************************************************
-// Purpose: Removes the current project from the known-project list after
-// confirmation and selects the nearest remaining project.
+// Purpose: Delegates project removal to the plugin and refreshes the selector.
 // *****************************************************************************
 procedure TFormSelection.ButtonRemoveProjectClick(Sender: TObject);
-var
-  I: Integer;
 begin
   inherited;
-  if Assigned(ProjectList.Current) then
-  begin
-    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName,
-      ExpandFileName(ProjectList.Current.FileName)])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
-      ClearFlag(tfPositionRelativeToWindow).Warning.YesNo.DefButton(tcbNo).
-      AddFlag(tfAllowDialogCancellation).Execute(Self) = mrYes then
-    begin
-      I := ProjectList.IndexOf(ProjectList.Current);
-      ProjectList.Delete(I);
-      if ProjectList.Count > 0 then
-        ProjectList.Current := ProjectList.Items[Max(0, I - 1)]
-      else
-        ProjectList.Current := nil;
-      ProjectList.SaveConfig;
-      RefreshComboBox;
-      Plugin.RefreshProjectList;
-    end;
-  end;
+  Plugin.ProjectRemove(Self.Handle);
+  RefreshComboBox;
 end;
 
 // *****************************************************************************

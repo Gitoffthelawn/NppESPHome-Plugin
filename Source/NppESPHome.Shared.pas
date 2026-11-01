@@ -1,4 +1,4 @@
-// Central shared unit for the NppESPHome plugin.
+﻿// Central shared unit for the NppESPHome plugin.
 // Contains core classes for managing ESPHome projects, templates, system utilities, and UI image manipulation.
 unit NppESPHome.Shared;
 
@@ -183,9 +183,15 @@ type
     function GetFriendlyName: string;
     function GetDescription: string;
     function GetOptionDeps: TStringList;
+    constructor Create(const AFileName: string;
+      const AReferencedFiles: TStrings); overload;
+    procedure Initialize(const AFileName: string;
+      const AReferencedFiles: TStrings);
+    procedure BuildReferencedFiles(const AReferencedFiles: TStrings);
 
   public
-    constructor Create(const AFileName: string);
+    constructor Create(const AFileName: string); overload;
+    destructor Destroy; override;
     property FileName: string read FFileName;
     property Name: string read FName;
     property UIName: string read GetUIName;
@@ -208,6 +214,9 @@ type
     procedure SetOption(const Option: string; const Value: string); overload;
 
     property OptionDependencies: TStringList read GetOptionDeps;
+    procedure AddOptionDependencies; overload;
+    procedure AddOptionDependencies(const Dependencies: TStrings); overload;
+    procedure ClearOptionDependencies;
     procedure LoadOptionDependencies;
     procedure SaveOptionDependencies;
 
@@ -309,11 +318,56 @@ implementation
 
 uses
   NppESPHome.Plugin, SysUtils, System.StrUtils, Neslib.Yaml, TDMB, Vcl.Dialogs, Vcl.Controls, Xml.XMLDoc, System.IOUtils, System.NetEncoding, System.Net.HttpClient,
-  System.Net.HttpClientComponent, System.Net.URLClient, TlHelp32, System.UIConsts;
+  System.Net.HttpClientComponent, System.Net.URLClient, TlHelp32, System.UIConsts,
+  System.Generics.Defaults;
 
 // ============================================================================
 // TProject Implementation
 // ============================================================================
+
+type
+  TDependencyStringList = class(TStringList)
+  public
+    constructor Create;
+    function Add(const S: string): Integer; override;
+  end;
+
+  TProjectReferenceKind = (prkCpp, prkCss, prkJavaScript, prkTextData,
+    prkExternalComponent);
+
+function IsYamlFileName(const FileName: string): Boolean;
+var
+  Extension: string;
+begin
+  Extension := ExtractFileExt(FileName);
+  Result := SameText(Extension, '.yaml') or SameText(Extension, '.yml');
+end;
+
+constructor TDependencyStringList.Create;
+begin
+  inherited Create;
+  CaseSensitive := False;
+end;
+
+function TDependencyStringList.Add(const S: string): Integer;
+var
+  InsertIndex: Integer;
+begin
+  Result := IndexOf(S);
+  if Result >= 0 then
+    Exit;
+
+  if IsYamlFileName(S) then
+  begin
+    InsertIndex := 0;
+    while (InsertIndex < Count) and IsYamlFileName(Strings[InsertIndex]) do
+      Inc(InsertIndex);
+    Insert(InsertIndex, S);
+    Result := InsertIndex;
+  end
+  else
+    Result := inherited Add(S);
+end;
 
 // *****************************************************************************
 // Purpose: Initializes a new TProject instance by parsing the provided YAML
@@ -322,106 +376,694 @@ uses
 // WebServer).
 // *****************************************************************************
 constructor TProject.Create(const AFileName: string);
+begin
+  inherited Create;
+  Initialize(AFileName, nil);
+end;
+
+constructor TProject.Create(const AFileName: string;
+  const AReferencedFiles: TStrings);
+begin
+  inherited Create;
+  Initialize(AFileName, AReferencedFiles);
+end;
+
+procedure TProject.Initialize(const AFileName: string;
+  const AReferencedFiles: TStrings);
+const
+  PlatformCount = 7;
+  PlatformNames: array[0..PlatformCount - 1] of string =
+    ('esp32', 'esp8266', 'bk72xx', 'ln882x', 'rp2040', 'rtl87xx', 'host');
 var
+  ActiveFiles: TStringList;
+  IncludeChainValid: Boolean;
+  NameDepth: Integer;
+  FriendlyNameDepth: Integer;
+  PlatformDepth: array[0..PlatformCount - 1] of Integer;
+  BoardDepth: array[0..PlatformCount - 1] of Integer;
+  FrameworkDepth: array[0..PlatformCount - 1] of Integer;
+  PlatformBoard: array[0..PlatformCount - 1] of string;
+  PlatformFramework: array[0..PlatformCount - 1] of string;
+  WiFiDepth: Integer;
+  WebServerDepth: Integer;
   Index: Integer;
-  Doc: IYamlDocument;
-  Name: string;
-  SubstitutionMap: TDictionary<string, string>; // Maps variable names to their substitution values
+  SelectedPlatform: Integer;
+  RootFileName: string;
+  RootSubstitutions: TDictionary<string, string>;
+  YamlReferenceCount: Integer;
 
-  // Local Helper: Replaces YAML variables (like $name or ${name}) with actual values
-  // extracted from the 'substitutions' block of the YAML file.
-  function Substitute(const Value: string): string;
-  var
-    Pair: TPair<string, string>;
-    ResultString, Replacement: string;
+  function NewSubstitutionMap: TDictionary<string, string>;
   begin
-    ResultString := Value;
-    repeat
-      Result := ResultString;
-      // Iterate over the dictionary of substitutions
-      for Pair in SubstitutionMap do
-      begin
-        // 1. Check for standard format: $variable
-        Replacement := '$' + Pair.Key;
-        if ContainsText(ResultString, Replacement) then
-          ResultString := ResultString.Replace(Replacement, Pair.Value, [rfReplaceAll, rfIgnoreCase]);
-
-        // 2. Check for bracketed format: ${variable}
-        Replacement := '${' + Pair.Key + '}';
-        if ContainsText(ResultString, Replacement) then
-          ResultString := ResultString.Replace(Replacement, Pair.Value, [rfReplaceAll, rfIgnoreCase]);
-      end;
-    // Loop until the string stops changing. This handles nested substitutions
-    // (e.g., $var1 resolving to a string that contains $var2).
-    until ResultString = Result;
+    Result := TDictionary<string, string>.Create(
+      TIStringComparer.Ordinal);
   end;
 
-  // Local Helper: Scans the parsed YAML document for known microcontroller keys.
-  function FindMicrocontroller: string;
-  const
-    // List of platforms officially supported by ESPHome
-    Microcontrollers: array[0..6] of string = ('esp32', 'esp8266', 'bk72xx', 'ln882x', 'rp2040', 'rtl87xx', 'host');
+  function CloneSubstitutions(
+    const Source: TDictionary<string, string>): TDictionary<string, string>;
   var
-    Microcontroller: string;
+    Pair: TPair<string, string>;
   begin
-    Result := '';
-    for Microcontroller in Microcontrollers do
-      // If the node for a specific microcontroller exists (is not Null), we found our platform
-      if Doc.Root.Values[Microcontroller].NodeType <> TYamlNodeType.Null then
-        Exit(Microcontroller);
+    Result := NewSubstitutionMap;
+    for Pair in Source do
+      Result.AddOrSetValue(Pair.Key, Pair.Value);
+  end;
+
+  procedure MergeSubstitutions(const Node: TYamlNode;
+    const Target: TDictionary<string, string>; const Overwrite: Boolean);
+  var
+    Element: PYamlElement;
+    ItemIndex: Integer;
+    Key: string;
+  begin
+    if not Node.IsMapping then
+      Exit;
+
+    for ItemIndex := 0 to Node.Count - 1 do
+    begin
+      Element := Node.Elements[ItemIndex];
+      if not Assigned(Element) or not Element.Key.IsScalar or
+        not Element.Value.IsScalar then
+        Continue;
+
+      Key := Element.Key.ToString;
+      if (Key <> '') and (Overwrite or not Target.ContainsKey(Key)) then
+        Target.AddOrSetValue(Key, Element.Value.ToString);
+    end;
+  end;
+
+  // Replaces both $name and ${name}; the pass limit also protects malformed
+  // projects containing circular substitution definitions.
+  function Substitute(const Value: string;
+    const Variables: TDictionary<string, string>): string;
+  var
+    Pair: TPair<string, string>;
+    Pass: Integer;
+    Previous: string;
+  begin
+    Result := Value;
+    for Pass := 1 to 32 do
+    begin
+      Previous := Result;
+      for Pair in Variables do
+      begin
+        Result := Result.Replace('${' + Pair.Key + '}', Pair.Value,
+          [rfReplaceAll, rfIgnoreCase]);
+        Result := Result.Replace('$' + Pair.Key, Pair.Value,
+          [rfReplaceAll, rfIgnoreCase]);
+      end;
+      if Result = Previous then
+        Break;
+    end;
+  end;
+
+  function GetPlatformIndex(const Value: string): Integer;
+  var
+    PlatformIndex: Integer;
+  begin
+    for PlatformIndex := 0 to PlatformCount - 1 do
+      if SameText(Value, PlatformNames[PlatformIndex]) then
+        Exit(PlatformIndex);
+    Result := -1;
+  end;
+
+  procedure AssignTextValue(var Target: string; var TargetDepth: Integer;
+    const Node: TYamlNode; const Variables: TDictionary<string, string>;
+    const Depth: Integer);
+  begin
+    if Node.IsScalar and (Depth < TargetDepth) then
+    begin
+      Target := Substitute(Node.ToString, Variables);
+      TargetDepth := Depth;
+    end;
+  end;
+
+  procedure AssignFeatureValue(var Target: Boolean; var TargetDepth: Integer;
+    const Value: Boolean; const Depth: Integer);
+  begin
+    if Depth < TargetDepth then
+    begin
+      Target := Value;
+      TargetDepth := Depth;
+    end;
+  end;
+
+  function ConditionIsFalse(const Node: TYamlNode;
+    const Variables: TDictionary<string, string>): Boolean;
+  var
+    Value: string;
+  begin
+    if not Node.IsScalar then
+      Exit(False);
+
+    Value := Trim(Substitute(Node.ToString, Variables));
+    Result := (Value = '') or SameText(Value, 'false') or
+      SameText(Value, 'no') or SameText(Value, 'off') or (Value = '0');
+  end;
+
+  function ReadInclude(const Node: TYamlNode;
+    const Variables: TDictionary<string, string>; out IncludeFileName: string;
+    out IncludeVariables: TDictionary<string, string>): Boolean;
+  var
+    ConditionNode: TYamlNode;
+    FileNode: TYamlNode;
+  begin
+    Result := False;
+    IncludeFileName := '';
+    IncludeVariables := CloneSubstitutions(Variables);
+
+    if Node.IsScalar then
+      IncludeFileName := Node.ToString
+    else if Node.IsMapping then
+    begin
+      MergeSubstitutions(Node.Values['vars'], IncludeVariables, True);
+
+      ConditionNode := Node.Values['condition'];
+      if not ConditionNode.IsNil and
+        ConditionIsFalse(ConditionNode, IncludeVariables) then
+        Exit;
+
+      FileNode := Node.Values['file'];
+      if FileNode.IsScalar then
+        IncludeFileName := FileNode.ToString;
+    end;
+
+    IncludeFileName := Trim(Substitute(IncludeFileName, IncludeVariables));
+    Result := IncludeFileName <> '';
+  end;
+
+  function IsAllowedReferenceFile(const FileName: string;
+    const ReferenceKind: TProjectReferenceKind): Boolean;
+  var
+    Extension: string;
+  begin
+    Extension := ExtractFileExt(FileName);
+    case ReferenceKind of
+      prkCpp:
+        Result := MatchText(Extension, ['.h', '.hpp', '.hh', '.hxx',
+          '.tcc', '.inc', '.c', '.cc', '.cpp', '.cxx']);
+      prkCss:
+        Result := SameText(Extension, '.css');
+      prkJavaScript:
+        Result := MatchText(Extension, ['.js', '.mjs']);
+      prkTextData:
+        Result := MatchText(Extension, ['.txt', '.csv']);
+      prkExternalComponent:
+        Result := SameText(Extension, '.py') or
+          MatchText(Extension, ['.h', '.hpp', '.hh', '.hxx', '.tcc',
+            '.inc', '.c', '.cc', '.cpp', '.cxx']);
+    else
+      Result := False;
+    end;
+  end;
+
+  procedure AddReferenceFile(const FileName: string);
+  var
+    ExpandedFileName: string;
+  begin
+    if not Assigned(AReferencedFiles) then
+      Exit;
+
+    ExpandedFileName := ExpandFileName(FileName);
+    if not FileExists(ExpandedFileName) or
+      SameFileName(ExpandedFileName, RootFileName) or
+      (AReferencedFiles.IndexOf(ExpandedFileName) >= 0) then
+      Exit;
+
+    if IsYamlFileName(ExpandedFileName) then
+    begin
+      AReferencedFiles.Insert(YamlReferenceCount, ExpandedFileName);
+      Inc(YamlReferenceCount);
+    end
+    else
+      AReferencedFiles.Add(ExpandedFileName);
+  end;
+
+  function TryResolveLocalPath(const Value: string;
+    const Variables: TDictionary<string, string>; out ResolvedPath: string):
+    Boolean;
+  var
+    Candidate: string;
+  begin
+    Result := False;
+    ResolvedPath := '';
+    Candidate := Trim(Substitute(Value, Variables));
+    if (Candidate = '') or (Pos('://', Candidate) > 0) or
+      (Pos('$', Candidate) > 0) or (Pos('{{', Candidate) > 0) or
+      (Pos('{%', Candidate) > 0) or (Pos(#10, Candidate) > 0) or
+      (Pos(#13, Candidate) > 0) or
+      ((Candidate[1] = '<') and Candidate.EndsWith('>')) then
+      Exit;
+
+    try
+      if IsRelativePath(Candidate) then
+        Candidate := IncludeTrailingPathDelimiter(
+          ExtractFileDir(RootFileName)) + Candidate;
+      ResolvedPath := ExpandFileName(Candidate);
+      Result := True;
+    except
+      ResolvedPath := '';
+    end;
+  end;
+
+  procedure AddReferenceDirectory(const DirectoryName: string;
+    const ReferenceKind: TProjectReferenceKind);
+  var
+    Files: TStringList;
+    ReferencedFile: string;
+  begin
+    Files := TStringList.Create;
+    try
+      try
+        Files.CaseSensitive := False;
+        Files.Sorted := True;
+        Files.Duplicates := dupIgnore;
+        for ReferencedFile in TDirectory.GetFiles(DirectoryName, '*',
+          TSearchOption.soAllDirectories) do
+          Files.Add(ReferencedFile);
+
+        for ReferencedFile in Files do
+          if IsAllowedReferenceFile(ReferencedFile, ReferenceKind) then
+            AddReferenceFile(ReferencedFile);
+      except
+        // A directory can disappear or become inaccessible while it is
+        // scanned. Keep the other discovered dependencies instead of failing
+        // the project.
+      end;
+    finally
+      Files.Free;
+    end;
+  end;
+
+  procedure AddWhitelistedReference(const Value: string;
+    const Variables: TDictionary<string, string>;
+    const ReferenceKind: TProjectReferenceKind;
+    const AllowDirectory: Boolean = False);
+  var
+    Candidate: string;
+  begin
+    if not TryResolveLocalPath(Value, Variables, Candidate) then
+      Exit;
+
+    if FileExists(Candidate) and
+      IsAllowedReferenceFile(Candidate, ReferenceKind) then
+      AddReferenceFile(Candidate)
+    else if AllowDirectory and DirectoryExists(Candidate) then
+      AddReferenceDirectory(Candidate, ReferenceKind);
+  end;
+
+  procedure AddExternalComponentSource(const SourceValue: string;
+    const ComponentsNode: TYamlNode;
+    const Variables: TDictionary<string, string>);
+  var
+    ComponentName: string;
+    ComponentPath: string;
+    ItemIndex: Integer;
+    SourcePath: string;
+
+    procedure AddComponent(const Value: string);
+    begin
+      ComponentName := Trim(Substitute(Value, Variables));
+      if (ComponentName = '') or (Pos('$', ComponentName) > 0) or
+        (Pos('{{', ComponentName) > 0) or (Pos('{%', ComponentName) > 0) then
+        Exit;
+
+      ComponentPath := IncludeTrailingPathDelimiter(SourcePath) +
+        ComponentName;
+      if DirectoryExists(ComponentPath) then
+        AddReferenceDirectory(ComponentPath, prkExternalComponent);
+    end;
+
+  begin
+    if not TryResolveLocalPath(SourceValue, Variables, SourcePath) or
+      not DirectoryExists(SourcePath) then
+      Exit;
+
+    if ComponentsNode.IsSequence then
+    begin
+      for ItemIndex := 0 to ComponentsNode.Count - 1 do
+        if ComponentsNode.Nodes[ItemIndex].IsScalar then
+          AddComponent(ComponentsNode.Nodes[ItemIndex].ToString);
+    end
+    else if ComponentsNode.IsScalar then
+      AddComponent(ComponentsNode.ToString)
+    else
+      AddReferenceDirectory(SourcePath, prkExternalComponent);
+  end;
+
+  procedure AnalyzeExternalComponentEntry(const Entry: TYamlNode;
+    const Variables: TDictionary<string, string>);
+  var
+    PathNode: TYamlNode;
+    SourceNode: TYamlNode;
+    SourceType: string;
+    SourceValue: string;
+    TypeNode: TYamlNode;
+  begin
+    if not Entry.IsMapping then
+      Exit;
+
+    SourceNode := Entry.Values['source'];
+    SourceValue := '';
+    if SourceNode.IsScalar then
+      SourceValue := SourceNode.ToString
+    else if SourceNode.IsMapping then
+    begin
+      TypeNode := SourceNode.Values['type'];
+      if TypeNode.IsScalar then
+        SourceType := Trim(Substitute(TypeNode.ToString, Variables))
+      else
+        SourceType := '';
+      if (SourceType <> '') and not SameText(SourceType, 'local') then
+        Exit;
+
+      PathNode := SourceNode.Values['path'];
+      if PathNode.IsScalar then
+        SourceValue := PathNode.ToString;
+    end;
+
+    if SourceValue <> '' then
+      AddExternalComponentSource(SourceValue, Entry.Values['components'],
+        Variables);
+  end;
+
+  procedure AnalyzeExternalComponents(const Node: TYamlNode;
+    const Variables: TDictionary<string, string>);
+  var
+    ItemIndex: Integer;
+  begin
+    if Node.IsSequence then
+      for ItemIndex := 0 to Node.Count - 1 do
+        AnalyzeExternalComponentEntry(Node.Nodes[ItemIndex], Variables)
+    else
+      AnalyzeExternalComponentEntry(Node, Variables);
+  end;
+
+  procedure AnalyzeFile(const FileName, Context: string;
+    const Variables: TDictionary<string, string>; const Depth: Integer);
+    forward;
+
+  procedure AnalyzeNode(const Node: TYamlNode; const CurrentFileName,
+    Context: string; const Variables: TDictionary<string, string>;
+    const Depth: Integer; const InPackages: Boolean);
+  var
+    ChildContext: string;
+    ChildInPackages: Boolean;
+    Element: PYamlElement;
+    IncludeContext: string;
+    IncludeFileName: string;
+    IncludePath: string;
+    IncludeVariables: TDictionary<string, string>;
+    ItemIndex: Integer;
+    Key: string;
+    PlatformIndex: Integer;
+    ValueNode: TYamlNode;
+  begin
+    if SameText(Node.Tag, '!include') then
+    begin
+      IncludeVariables := nil;
+      try
+        if not ReadInclude(Node, Variables, IncludeFileName,
+          IncludeVariables) then
+          Exit;
+
+        // Remote package references are resolved by ESPHome itself and do not
+        // identify a local file that NppESPHome can safely inspect here.
+        if (Pos('://', IncludeFileName) > 0) or
+          (Pos('$', IncludeFileName) > 0) or
+          (Pos('{{', IncludeFileName) > 0) or
+          (Pos('{%', IncludeFileName) > 0) then
+          Exit;
+
+        IncludePath := IncludeFileName;
+        if IsRelativePath(IncludePath) then
+          IncludePath := IncludeTrailingPathDelimiter(
+            ExtractFileDir(CurrentFileName)) + IncludePath;
+        IncludePath := ExpandFileName(IncludePath);
+        if not IsYamlFileName(IncludePath) then
+          Exit;
+        AddReferenceFile(IncludePath);
+
+        IncludeContext := Context;
+        if InPackages then
+          IncludeContext := '';
+        AnalyzeFile(IncludePath, IncludeContext, IncludeVariables, Depth + 1);
+      finally
+        IncludeVariables.Free;
+      end;
+      Exit;
+    end;
+
+    if Assigned(AReferencedFiles) and Node.IsScalar and not InPackages and
+      not SameText(Node.Tag, '!secret') and
+      ((Node.Tag = '') or not Node.Tag.StartsWith('!')) then
+    begin
+      if SameText(Context, 'esphome.includes') or
+        SameText(Context, 'esphome.includes_c') then
+        AddWhitelistedReference(Node.ToString, Variables, prkCpp, True)
+      else if SameText(Context, 'web_server.css_include') then
+        AddWhitelistedReference(Node.ToString, Variables, prkCss)
+      else if SameText(Context, 'web_server.js_include') then
+        AddWhitelistedReference(Node.ToString, Variables, prkJavaScript);
+
+      // Text and CSV data files can be consumed by several components and
+      // custom code, so accept an existing local path in any YAML context.
+      AddWhitelistedReference(Node.ToString, Variables, prkTextData);
+    end;
+
+    case Node.NodeType of
+      TYamlNodeType.Mapping:
+        for ItemIndex := 0 to Node.Count - 1 do
+        begin
+          Element := Node.Elements[ItemIndex];
+          if not Assigned(Element) or not Element.Key.IsScalar then
+            Continue;
+
+          Key := Element.Key.ToString;
+          ValueNode := Element.Value;
+
+          // ESPHome ignores hidden top-level blocks entirely.
+          if (Context = '') and Key.StartsWith('.') then
+            Continue;
+
+          if Assigned(AReferencedFiles) and (Context = '') and
+            SameText(Key, 'external_components') then
+            AnalyzeExternalComponents(ValueNode, Variables);
+
+          if Context = '' then
+          begin
+            PlatformIndex := GetPlatformIndex(Key);
+            if (PlatformIndex >= 0) and
+              not SameText(ValueNode.Tag, '!remove') and
+              (Depth < PlatformDepth[PlatformIndex]) then
+              PlatformDepth[PlatformIndex] := Depth;
+
+            if SameText(Key, 'wifi') then
+              AssignFeatureValue(FHasWiFi, WiFiDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth)
+            else if SameText(Key, 'web_server') then
+              AssignFeatureValue(FHasWebServer, WebServerDepth,
+                not SameText(ValueNode.Tag, '!remove'), Depth);
+          end;
+
+          if SameText(Context, 'esphome') then
+          begin
+            if SameText(Key, 'name') then
+              AssignTextValue(FName, NameDepth, ValueNode, Variables, Depth)
+            else if SameText(Key, 'friendly_name') then
+              AssignTextValue(FFriendlyName, FriendlyNameDepth, ValueNode,
+                Variables, Depth);
+          end;
+
+          PlatformIndex := GetPlatformIndex(Context);
+          if PlatformIndex >= 0 then
+          begin
+            if SameText(Key, 'board') then
+              AssignTextValue(PlatformBoard[PlatformIndex],
+                BoardDepth[PlatformIndex], ValueNode, Variables, Depth)
+            else if SameText(Key, 'framework') and ValueNode.IsScalar and
+              not SameText(ValueNode.Tag, '!include') then
+              AssignTextValue(PlatformFramework[PlatformIndex],
+                FrameworkDepth[PlatformIndex], ValueNode, Variables, Depth);
+          end;
+
+          for PlatformIndex := 0 to PlatformCount - 1 do
+            if SameText(Context, PlatformNames[PlatformIndex] + '.framework')
+              and SameText(Key, 'type') then
+            begin
+              AssignTextValue(PlatformFramework[PlatformIndex],
+                FrameworkDepth[PlatformIndex], ValueNode, Variables, Depth);
+              Break;
+            end;
+
+          ChildInPackages := InPackages or
+            ((Context = '') and SameText(Key, 'packages'));
+          if SameText(Key, '<<') then
+            ChildContext := Context
+          else if ChildInPackages then
+            ChildContext := 'packages'
+          else if Context = '' then
+            ChildContext := Key
+          else
+            ChildContext := Context + '.' + Key;
+
+          AnalyzeNode(ValueNode, CurrentFileName, ChildContext, Variables,
+            Depth, ChildInPackages);
+        end;
+
+      TYamlNodeType.Sequence:
+        for ItemIndex := 0 to Node.Count - 1 do
+          AnalyzeNode(Node.Nodes[ItemIndex], CurrentFileName, Context,
+            Variables, Depth, InPackages);
+    end;
+  end;
+
+  procedure AnalyzeFile(const FileName, Context: string;
+    const Variables: TDictionary<string, string>; const Depth: Integer);
+  var
+    ActiveIndex: Integer;
+    Doc: IYamlDocument;
+    ExpandedFileName: string;
+    LocalVariables: TDictionary<string, string>;
+  begin
+    ExpandedFileName := ExpandFileName(FileName);
+    if ActiveFiles.IndexOf(ExpandedFileName) >= 0 then
+    begin
+      IncludeChainValid := False;
+      Exit;
+    end;
+
+    if not FileExists(ExpandedFileName) then
+    begin
+      IncludeChainValid := False;
+      Exit;
+    end;
+
+    ActiveFiles.Add(ExpandedFileName);
+    LocalVariables := CloneSubstitutions(Variables);
+    try
+      try
+        Doc := TYamlDocument.Load(ExpandedFileName);
+        if not Assigned(Doc) then
+        begin
+          IncludeChainValid := False;
+          Exit;
+        end;
+
+        // Package defaults and substitutions fill missing values only. Values
+        // inherited from the main file or supplied through include vars win.
+        MergeSubstitutions(Doc.Root.Values['defaults'], LocalVariables, False);
+        MergeSubstitutions(Doc.Root.Values['substitutions'], LocalVariables,
+          False);
+        AnalyzeNode(Doc.Root, ExpandedFileName, Context, LocalVariables, Depth,
+          False);
+      except
+        IncludeChainValid := False;
+      end;
+    finally
+      LocalVariables.Free;
+      ActiveIndex := ActiveFiles.IndexOf(ExpandedFileName);
+      if ActiveIndex >= 0 then
+        ActiveFiles.Delete(ActiveIndex);
+    end;
   end;
 
 begin
   FValid := False;
-  FOptionDeps := TStringList.Create(dupIgnore, true, False); // Creates a list avoiding duplicate dependency names
-  Name := ExpandFileName(AFileName);
-
-  // Check if the file physically exists before attempting to parse
-  if FileExists(Name) then
+  FOptionDeps := TDependencyStringList.Create;
+  RootFileName := ExpandFileName(AFileName);
+  YamlReferenceCount := 0;
+  IncludeChainValid := True;
+  NameDepth := High(Integer);
+  FriendlyNameDepth := High(Integer);
+  WiFiDepth := High(Integer);
+  WebServerDepth := High(Integer);
+  for Index := 0 to PlatformCount - 1 do
   begin
-    // Attempt to load and parse the YAML file using Neslib.Yaml
-    Doc := TYamlDocument.Load(Name);
-    if Assigned(Doc) then
-    begin
-      SubstitutionMap := TDictionary<string, string>.Create;
-
-      // STEP 1: Pre-load the Substitution Map.
-      // We must do this first because the device name, board, etc. might rely on these variables.
-      for Index := 0 to Doc.Root.Values['substitutions'].Count - 1 do
-        SubstitutionMap.Add(
-          Doc.Root.Values['substitutions'].Elements[Index].Key,
-          Doc.Root.Values['substitutions'].Elements[Index].Value
-        );
-
-      // STEP 2: Extract the basic core node: 'esphome -> name'
-      FName := Substitute(Doc.Root.Values['esphome'].Values['name'].ToString());
-
-      // If 'name' is populated, we assume the file is a structurally valid ESPHome configuration
-      if (FName <> '') then
-      begin
-        FFileName := AFileName;
-        FFriendlyName := Substitute(Doc.Root.Values['esphome'].Values['friendly_name'].ToString());
-
-        // STEP 3: Identify hardware parameters
-        FMicrocontroller := FindMicrocontroller;
-        FBoard := Substitute(Doc.Root.Values[FMicrocontroller].Values['board'].ToString());
-        FFramework := Substitute(Doc.Root.Values[FMicrocontroller].Values['framework'].Values['type'].ToString());
-
-        // STEP 4: Check for the presence of specific top-level modules
-        FHasWiFi := Doc.Root.Values['wifi'].NodeType <> TYamlNodeType.Null;
-        FHasWebServer := Doc.Root.Values['web_server'].NodeType <> TYamlNodeType.Null;
-
-        // The project is fully valid only if we managed to identify the underlying microcontroller
-        FValid := FMicrocontroller <> '';
-
-        // STEP 5: Load specific user settings/dependencies linked to this file from the global INI
-        LoadOptionDependencies;
-      end;
-
-      // Free the dictionary to prevent memory leaks
-      SubstitutionMap.Free;
-    end;
+    PlatformDepth[Index] := High(Integer);
+    BoardDepth[Index] := High(Integer);
+    FrameworkDepth[Index] := High(Integer);
   end;
+
+  ActiveFiles := TStringList.Create;
+  ActiveFiles.CaseSensitive := False;
+  RootSubstitutions := NewSubstitutionMap;
+  try
+    AnalyzeFile(RootFileName, '', RootSubstitutions, 0);
+
+    SelectedPlatform := -1;
+    for Index := 0 to PlatformCount - 1 do
+      if (PlatformDepth[Index] < High(Integer)) and
+        ((SelectedPlatform < 0) or
+        (PlatformDepth[Index] < PlatformDepth[SelectedPlatform])) then
+        SelectedPlatform := Index;
+
+    if SelectedPlatform >= 0 then
+    begin
+      FMicrocontroller := PlatformNames[SelectedPlatform];
+      FBoard := PlatformBoard[SelectedPlatform];
+      FFramework := PlatformFramework[SelectedPlatform];
+    end;
+
+    FValid := IncludeChainValid and (FName <> '') and
+      (FMicrocontroller <> '');
+    if FValid then
+    begin
+      FFileName := AFileName;
+      if not Assigned(AReferencedFiles) then
+        LoadOptionDependencies;
+    end;
+  finally
+    RootSubstitutions.Free;
+    ActiveFiles.Free;
+  end;
+end;
+
+destructor TProject.Destroy;
+begin
+  FOptionDeps.Free;
+  inherited;
+end;
+
+procedure TProject.BuildReferencedFiles(const AReferencedFiles: TStrings);
+var
+  Scanner: TProject;
+begin
+  if not Assigned(AReferencedFiles) then
+    Exit;
+  AReferencedFiles.Clear;
+  if not FileExists(FFileName) then
+    Exit;
+
+  Scanner := TProject.Create(FFileName, AReferencedFiles);
+  Scanner.Free;
+end;
+
+procedure TProject.AddOptionDependencies;
+var
+  Dependencies: TStringList;
+begin
+  Dependencies := TStringList.Create;
+  try
+    Dependencies.CaseSensitive := False;
+    BuildReferencedFiles(Dependencies);
+    AddOptionDependencies(Dependencies);
+  finally
+    Dependencies.Free;
+  end;
+end;
+
+procedure TProject.AddOptionDependencies(const Dependencies: TStrings);
+var
+  Dependency: string;
+begin
+  for Dependency in Dependencies do
+    if not SameFileName(Dependency, FFileName) then
+      FOptionDeps.Add(Dependency);
+end;
+
+procedure TProject.ClearOptionDependencies;
+begin
+  FOptionDeps.Clear;
 end;
 
 // *****************************************************************************
@@ -603,7 +1245,7 @@ begin
     for I := 0 to Count - 1 do
     begin
       R := GetOption(Format(csKeyDependencyPrefix + '%d', [I]), csDefaultEmpty);
-      if R <> csDefaultEmpty then
+      if (R <> csDefaultEmpty) and (FOptionDeps.IndexOf(R) < 0) then
         FOptionDeps.Add(R);
     end;
   end;

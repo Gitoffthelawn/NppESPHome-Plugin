@@ -25,9 +25,6 @@ Coordinates=381,144,98,58
 [LabelOptionRunReset]
 Coordinates=10,484,141,58
 
-[TreeViewOptions]
-Coordinates=137,552,113,36
-
 [CardESPHomeOptions]
 Coordinates=380,10,146,58
 Visible=True
@@ -99,7 +96,7 @@ Coordinates=0,454,175,36
 Coordinates=277,212,112,58
 
 []
-Coordinates=489,144,85,58
+Coordinates=137,552,113,36
 
 [VirtualImageList]
 Coordinates=187,490,139,36

@@ -165,6 +165,8 @@ type
     function GetFullPathFromBufferId(ABufferId: NativeInt): string;
     function GetCurrentBufferDirty(AViewIdx: Integer): Boolean;
     function GetDarkModeColors(PColors: PNppDarkModeColors): Boolean;
+    class procedure InitializeLightModeColors(
+      out Colors: TNppDarkModeColors); static;
     function GetToolbarIconSetChoice: Integer;
 
     function GetOpenFilesCnt(CntType: Integer): Integer;
@@ -863,6 +865,27 @@ begin
   if IsDarkModeEnabled then
     Result := Host.SendNpp(NPPM_GETDARKMODECOLORS,
       SizeOf(TNppDarkModeColors), LParam(PColors)) > 0;
+end;
+
+// *****************************************************************************
+// Purpose: Builds a light-mode palette from the current Windows system colors.
+// *****************************************************************************
+class procedure TNppPlugin.InitializeLightModeColors(
+  out Colors: TNppDarkModeColors);
+begin
+  Colors := Default(TNppDarkModeColors);
+  Colors.background := GetSysColor(COLOR_BTNFACE);
+  Colors.softerBackground := GetSysColor(COLOR_WINDOW);
+  Colors.hotBackground := GetSysColor(COLOR_MENUHILIGHT);
+  Colors.pureBackground := GetSysColor(COLOR_BTNFACE);
+  Colors.errorBackground := GetSysColor(COLOR_INFOBK);
+  Colors.text := GetSysColor(COLOR_WINDOWTEXT);
+  Colors.darkerText := GetSysColor(COLOR_GRAYTEXT);
+  Colors.disabledText := GetSysColor(COLOR_GRAYTEXT);
+  Colors.linkText := GetSysColor(COLOR_HOTLIGHT);
+  Colors.edge := GetSysColor(COLOR_BTNSHADOW);
+  Colors.hotEdge := GetSysColor(COLOR_HIGHLIGHT);
+  Colors.disabledEdge := GetSysColor(COLOR_INACTIVEBORDER);
 end;
 
 // *****************************************************************************

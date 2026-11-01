@@ -1035,23 +1035,6 @@ object FormProjects: TFormProjects
     Left = 280
     Top = 176
   end
-  object FileOpenDialogProject: TFileOpenDialog
-    DefaultExtension = '.yaml'
-    FavoriteLinks = <>
-    FileTypes = <
-      item
-        DisplayName = 'ESPHome Project Files'
-        FileMask = '*.yaml'
-      end
-      item
-        DisplayName = 'ESPHome Project Files'
-        FileMask = '*.yml'
-      end>
-    Options = [fdoStrictFileTypes, fdoForceFileSystem, fdoFileMustExist]
-    Title = 'Select an existing ESPHome project file'
-    Left = 368
-    Top = 72
-  end
   object PopupMenuProjects: TPopupMenu
     Images = VirtualImageList20
     Left = 64

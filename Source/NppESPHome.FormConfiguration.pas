@@ -11,7 +11,7 @@ uses
   Vcl.WinXPanels, Vcl.ExtCtrls,
   JvEdit,
   Vcl.VirtualImage, Vcl.Buttons, Vcl.ImgList,
-  JvCombobox, System.ImageList, JvExStdCtrls;
+  JvCombobox, System.ImageList, JvExStdCtrls, Vcl.CategoryButtons, Vcl.WinXCtrls;
 
 type
   // Modal editor for all settings stored against the current ESPHome project.
@@ -19,6 +19,15 @@ type
   // devices, monitors, dependencies, and theme resources discovered at runtime.
   TFormConfig = class(TNppPluginForm)
     GroupBoxProject: TGroupBox;
+    LabelProjectSummaryName: TLabel;
+    LabelProjectSummaryFile: TLabel;
+    PanelProjectBadges: TPanel;
+    PanelProjectMicrocontroller: TPanel;
+    PanelProjectBoard: TPanel;
+    PanelProjectFramework: TPanel;
+    PanelProjectWiFi: TPanel;
+    PanelProjectWebServer: TPanel;
+    LinkLabelProjectFile: TLinkLabel;
     VirtualImageList: TVirtualImageList;
     FileOpenDialogDependency: TFileOpenDialog;
     LabelOptionRunAdditionalParameters: TLabel;
@@ -28,8 +37,16 @@ type
     LabelOptionRunNoStates: TLabel;
     CheckBoxOptionRunReset: TCheckBox;
     LabelOptionRunReset: TLabel;
+    LabelRunTitle: TLabel;
+    LabelRunDescription: TLabel;
+    GroupBoxRunOutputDevice: TGroupBox;
+    LabelRunNoLogsDescription: TLabel;
+    LabelRunNoStatesDescription: TLabel;
+    LabelRunResetDescription: TLabel;
+    BevelRunOutputRow1: TBevel;
+    BevelRunOutputRow2: TBevel;
+    GroupBoxRunAdditionalArguments: TGroupBox;
     GroupBoxOptions: TGroupBox;
-    TreeViewOptions: TTreeView;
     CardPanelOptions: TCardPanel;
     CardProjectOptions: TCard;
     CardESPHomeOptions: TCard;
@@ -37,18 +54,44 @@ type
     ButtonAddDeps: TButton;
     ButtonRemoveDeps: TButton;
     LabelDependencies: TLabel;
+    LabelProjectTitle: TLabel;
+    LabelProjectDescription: TLabel;
+    GroupBoxProjectDependencies: TGroupBox;
     CardRunOptions: TCard;
     CardCompileOptions: TCard;
     CardUploadOptions: TCard;
     CardLogsOptions: TCard;
     CardCleanOptions: TCard;
+    LabelUploadTitle: TLabel;
+    LabelUploadDescription: TLabel;
+    GroupBoxUploadAdditionalArguments: TGroupBox;
+    LabelLogsTitle: TLabel;
+    LabelLogsDescription: TLabel;
+    GroupBoxLogsOutputDevice: TGroupBox;
+    LabelLogsResetDescription: TLabel;
+    LabelLogsNoStatesDescription: TLabel;
+    BevelLogsOutputRow1: TBevel;
+    GroupBoxLogsAdditionalArguments: TGroupBox;
+    LabelCleanTitle: TLabel;
+    LabelCleanDescription: TLabel;
+    GroupBoxCleanAdditionalArguments: TGroupBox;
     CardNppOptions: TCard;
     LabelLogLevel: TLabel;
     ComboBoxLogLevel: TJvImageComboBox;
     LabelDevice: TLabel;
     ComboBoxDevice: TJvImageComboBox;
+    LabelESPHomeTitle: TLabel;
+    LabelESPHomeDescription: TLabel;
+    GroupBoxESPHomeTargetLogging: TGroupBox;
+    LabelLogLevelDescription: TLabel;
+    BevelESPHomeOptionsRow1: TBevel;
+    GroupBoxESPHomeAdditionalArguments: TGroupBox;
     LabelAutosave: TLabel;
     ComboBoxOptionAutosave: TJvImageComboBox;
+    LabelNppTitle: TLabel;
+    LabelNppDescription: TLabel;
+    GroupBoxNppFileSaving: TGroupBox;
+    LabelAutosaveDescription: TLabel;
     LabelOptionESPHomeAdditionalParameters: TLabel;
     CheckBoxOptionLogsReset: TCheckBox;
     LabelOptionLogsReset: TLabel;
@@ -56,6 +99,11 @@ type
     LabelOptionLogsNoStates: TLabel;
     CheckBoxOptionCompileGenerateOnly: TCheckBox;
     LabelOptionCompileGenerateOnly: TLabel;
+    LabelCompileTitle: TLabel;
+    LabelCompileDescription: TLabel;
+    GroupBoxCompileBuildOptions: TGroupBox;
+    LabelCompileGenerateOnlyDescription: TLabel;
+    GroupBoxCompileAdditionalArguments: TGroupBox;
     EditOptionESPHomeAdditionalParameters: TJvEdit;
     EditOptionRunAdditionalParameters: TJvEdit;
     LinkLabelRunHelp: TLinkLabel;
@@ -80,12 +128,23 @@ type
     LabelOptionConsoleMonitor: TLabel;
     CheckBoxOptionSoloMode: TCheckBox;
     LabelOptionConsoleSoloMode: TLabel;
+    LabelExternalConsoleTitle: TLabel;
+    LabelExternalConsoleDescription: TLabel;
+    GroupBoxExternalConsoleBehavior: TGroupBox;
+    LabelConsoleAutocloseDescription: TLabel;
+    LabelConsoleAlwaysOnTopDescription: TLabel;
+    LabelConsoleSoloModeDescription: TLabel;
+    BevelExternalConsoleBehaviorRow1: TBevel;
+    BevelExternalConsoleBehaviorRow2: TBevel;
+    GroupBoxExternalConsolePlacement: TGroupBox;
+    LabelConsoleMonitorDescription: TLabel;
+    LabelConsolePositionDescription: TLabel;
+    BevelExternalConsolePlacementRow1: TBevel;
     LabelOptionCompileAdditionalParameters: TLabel;
     EditOptionCompileAdditionalParameters: TJvEdit;
     LabelOptionCleanAdditionalParameters: TLabel;
     EditOptionCleanAdditionalParameters: TJvEdit;
     VirtualImageMC: TVirtualImage;
-    MemoProject: TMemo;
     SpeedButtonRefresh: TSpeedButton;
     CardIntConsoleOptions: TCard;
     LabelIntConsoleForeground: TLabel;
@@ -104,8 +163,20 @@ type
     ButtonIntConsoleDefaults: TButton;
     ColorDialog: TColorDialog;
     LabelIntConsoleClearOnStart: TLabel;
+    LabelInternalConsoleTitle: TLabel;
+    LabelInternalConsoleDescription: TLabel;
+    GroupBoxInternalConsoleAppearance: TGroupBox;
+    GroupBoxInternalConsoleBehavior: TGroupBox;
+    LabelIntConsoleScrollbackDescription: TLabel;
+    LabelIntConsoleClearOnStartDescription: TLabel;
+    BevelInternalConsoleBehaviorRow1: TBevel;
     PanelButtons: TPanel;
     ButtonClose: TButton;
+    CategoryButtons: TCategoryButtons;
+    BevelVerticalSeparator: TBevel;
+    LinkLabelProjectFolder: TLinkLabel;
+    ButtonAutoAdd: TButton;
+    ButtonClearDeps: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ToggleDarkMode; override;
     procedure CheckBoxOptionRunNoLogsClick(Sender: TObject);
@@ -113,6 +184,8 @@ type
     procedure ComboBoxDeviceChange(Sender: TObject);
     procedure ComboBoxOptionAutosaveChange(Sender: TObject);
     procedure ButtonAddDepsClick(Sender: TObject);
+    procedure ButtonAutoAddClick(Sender: TObject);
+    procedure ButtonClearDepsClick(Sender: TObject);
     procedure ButtonRemoveDepsClick(Sender: TObject);
     procedure ComboBoxLogLevelChange(Sender: TObject);
     procedure EditOptionESPHomeAdditionalParametersChange(Sender: TObject);
@@ -123,9 +196,6 @@ type
     procedure CheckBoxOptionLogsResetClick(Sender: TObject);
     procedure CheckBoxOptionLogsNoStatesClick(Sender: TObject);
     procedure EditOptionLogsAdditionalParametersChange(Sender: TObject);
-    procedure TreeViewOptionsCollapsing(Sender: TObject; Node: TTreeNode; var AllowCollapse: Boolean);
-    procedure TreeViewOptionsChange(Sender: TObject; Node: TTreeNode);
-    procedure TreeViewOptionsCustomDrawItem(Sender: TCustomTreeView; Node: TTreeNode; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure ComboBoxOptionConsoleAutocloseChange(Sender: TObject);
     procedure LinkLabelHelpLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure CheckBoxOptionAlwaysOnTopClick(Sender: TObject);
@@ -134,7 +204,6 @@ type
     procedure CheckBoxOptionSoloModeClick(Sender: TObject);
     procedure EditOptionCompileAdditionalParametersChange(Sender: TObject);
     procedure EditOptionCleanAdditionalParametersChange(Sender: TObject);
-    procedure TreeViewOptionsGetImageIndex(Sender: TObject; Node: TTreeNode);
     procedure SpeedButtonRefreshClick(Sender: TObject);
     procedure ComboBoxIntConsoleFontChange(Sender: TObject);
     procedure IntConsoleColorClick(Sender: TObject);
@@ -142,6 +211,12 @@ type
     procedure EditIntConsoleScrollbackChange(Sender: TObject);
     procedure CheckBoxIntConsoleClearOnStartClick(Sender: TObject);
     procedure ButtonIntConsoleDefaultsClick(Sender: TObject);
+    procedure LinkLabelProjectFileLinkClick(Sender: TObject;
+      const Link: string; LinkType: TSysLinkType);
+    procedure CategoryButtonsSelectedItemChange(Sender: TObject;
+      const Button: TButtonItem);
+    procedure LinkLabelProjectFolderLinkClick(Sender: TObject;
+      const Link: string; LinkType: TSysLinkType);
   private
     procedure PopulateComboDevice;
   public
@@ -157,7 +232,52 @@ implementation
 
 uses
   NppESPHome.Shared, NppESPHome.Plugin, NppESPHome.FormProjects,
-  NppESPHome.FormConsole, Npp.Api, Registry, Math, Winapi.ShellAPI;
+  NppESPHome.FormConsole, Npp.Api, Registry, Math, Winapi.ShellAPI, TDMB;
+
+resourcestring
+  rsClearProjectDependencies =
+    'Remove all %d dependencies from project "%s"?' + sLineBreak + sLineBreak +
+    'Project file: "%s"';
+  rsClearProjectDependencies2 =
+    'This removes every dependency association stored in the NppESPHome configuration. ' +
+    'No file will be deleted from disk.' + sLineBreak + sLineBreak +
+    'You can rebuild the automatically detected dependencies later by pressing Auto.';
+
+
+procedure SetRoundedPanel(Panel: TPanel; const Radius: Integer);
+var
+  Rgn: HRGN;
+begin
+  Rgn := CreateRoundRectRgn(0, 0, Panel.Width, Panel.Height, Radius, Radius);
+  SetWindowRgn(Panel.Handle, Rgn, True);
+end;
+
+procedure ConfigureProjectBadge(Panel: TPanel; const Caption, Hint: string;
+  const Visible: Boolean);
+const
+  HorizontalPadding = 16;
+  MinimumWidth = 40;
+  MaximumWidth = 145;
+var
+  TextCanvas: TControlCanvas;
+begin
+  Panel.Visible := Visible;
+  if not Visible then
+    Exit;
+
+  Panel.Caption := Caption;
+  Panel.Hint := Hint;
+  TextCanvas := TControlCanvas.Create;
+  try
+    TextCanvas.Control := Panel;
+    TextCanvas.Font.Assign(Panel.Font);
+    Panel.Width := EnsureRange(TextCanvas.TextWidth(Caption) +
+      HorizontalPadding, MinimumWidth, MaximumWidth);
+  finally
+    TextCanvas.Free;
+  end;
+  SetRoundedPanel(Panel, Panel.Height);
+end;
 
 // *****************************************************************************
 // Purpose: Measures all list-box items and sets a horizontal scroll width wide
@@ -279,6 +399,12 @@ end;
 // *****************************************************************************
 // Purpose: Persists whether a new integrated command clears previous output.
 // *****************************************************************************
+procedure TFormConfig.CategoryButtonsSelectedItemChange(Sender: TObject;
+  const Button: TButtonItem);
+begin
+  CardPanelOptions.ActiveCardIndex := Button.Index;
+end;
+
 procedure TFormConfig.CheckBoxIntConsoleClearOnStartClick(Sender: TObject);
 begin
   inherited;
@@ -331,16 +457,11 @@ end;
 // views.
 // *****************************************************************************
 procedure TFormConfig.ButtonAddDepsClick(Sender: TObject);
-var
-  I: Integer;
 begin
   inherited;
   if FileOpenDialogDependency.Execute(Self.Handle) then
   begin
-    ProjectList.Current.OptionDependencies.AddStrings(FileOpenDialogDependency.Files);
-    I := ProjectList.Current.OptionDependencies.IndexOf(ProjectList.Current.FileName);
-    if I >= 0 then
-      ProjectList.Current.OptionDependencies.Delete(I);
+    ProjectList.Current.AddOptionDependencies(FileOpenDialogDependency.Files);
     ProjectList.Current.SaveOptionDependencies;
     ListBoxDependencies.Items.Clear;
     ListBoxDependencies.Items.AddStrings(ProjectList.Current.OptionDependencies);
@@ -349,6 +470,50 @@ begin
     if Assigned(FormProjects) then
       FormProjects.CurrentDocumentChanged;
   end;
+end;
+
+// *****************************************************************************
+// Purpose: Scans the complete local ESPHome configuration chain and appends
+// every referenced file to the current project's dependency list.
+// *****************************************************************************
+procedure TFormConfig.ButtonAutoAddClick(Sender: TObject);
+begin
+  inherited;
+  ProjectList.Current.AddOptionDependencies;
+  ProjectList.Current.SaveOptionDependencies;
+  ListBoxDependencies.Items.Assign(ProjectList.Current.OptionDependencies);
+  RecalcListBoxScrollWidth(ListBoxDependencies);
+  Plugin.RefreshProjectList;
+  if Assigned(FormProjects) then
+    FormProjects.CurrentDocumentChanged;
+end;
+
+// *****************************************************************************
+// Purpose: Removes every dependency associated with the current project after
+// explicit confirmation. The dependency files themselves are never deleted.
+// *****************************************************************************
+procedure TFormConfig.ButtonClearDepsClick(Sender: TObject);
+begin
+  inherited;
+  if ProjectList.Current.OptionDependencies.Count = 0 then
+    Exit;
+
+  if TD(Format(rsClearProjectDependencies,
+    [ProjectList.Current.OptionDependencies.Count,
+    ProjectList.Current.FriendlyName,
+    ExpandFileName(ProjectList.Current.FileName)])).
+    Text(rsClearProjectDependencies2).WindowCaption(rsMessageBoxWarning).
+    Warning.YesNo.DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
+    Execute(Self) <> mrYes then
+    Exit;
+
+  ProjectList.Current.ClearOptionDependencies;
+  ProjectList.Current.SaveOptionDependencies;
+  ListBoxDependencies.Items.Clear;
+  RecalcListBoxScrollWidth(ListBoxDependencies);
+  Plugin.RefreshProjectList;
+  if Assigned(FormProjects) then
+    FormProjects.CurrentDocumentChanged;
 end;
 
 // *****************************************************************************
@@ -607,10 +772,24 @@ var
 begin
   inherited;
 
-  TreeViewOptions.FullExpand;
-  TreeViewOptions.Selected := TreeViewOptions.Items[0];
+  LabelProjectSummaryName.Caption := ProjectList.Current.FriendlyName;
+  if ProjectList.Current.Name <> ProjectList.Current.FriendlyName then
+    LabelProjectSummaryName.Caption := Format('%s (%s)', [ProjectList.Current.FriendlyName, ProjectList.Current.Name]);
 
-  MemoProject.Text := ProjectList.Current.Description;
+  LabelProjectSummaryFile.Caption := ExtractFileName(
+    ProjectList.Current.FileName);
+
+  ConfigureProjectBadge(PanelProjectMicrocontroller,
+    UpperCase(ProjectList.Current.Microcontroller), 'Microcontroller',
+    ProjectList.Current.Microcontroller <> '');
+  ConfigureProjectBadge(PanelProjectBoard, ProjectList.Current.Board, 'Board',
+    ProjectList.Current.Board <> '');
+  ConfigureProjectBadge(PanelProjectFramework, ProjectList.Current.Framework,
+    'Framework', ProjectList.Current.Framework <> '');
+  ConfigureProjectBadge(PanelProjectWiFi, 'Wi-Fi', 'Wi-Fi enabled',
+    ProjectList.Current.HasWiFi);
+  ConfigureProjectBadge(PanelProjectWebServer, 'Web server',
+    'Web server enabled', ProjectList.Current.HasWebServer);
 
   if ProjectList.Current.GetOption(csKeyConsoleAutoClose, True) then
     ComboBoxOptionConsoleAutoclose.ItemIndex := 1
@@ -693,6 +872,30 @@ begin
 end;
 
 // *****************************************************************************
+// Purpose: Opens the current project file in Notepad++ from the project summary.
+// *****************************************************************************
+procedure TFormConfig.LinkLabelProjectFileLinkClick(Sender: TObject;
+  const Link: string; LinkType: TSysLinkType);
+begin
+  inherited;
+  if not Plugin.SwitchToFile(ProjectList.Current.FileName) then
+    Plugin.OpenFile(ProjectList.Current.FileName);
+end;
+
+procedure TFormConfig.LinkLabelProjectFolderLinkClick(Sender: TObject;
+  const Link: string; LinkType: TSysLinkType);
+var
+  ProjectFolder: string;
+begin
+  inherited;
+  ProjectFolder := ExtractFileDir(ExpandFileName(
+    ProjectList.Current.FileName));
+  if DirectoryExists(ProjectFolder) then
+    ShellExecute(Handle, 'open', PChar(ProjectFolder), nil, nil,
+      SW_SHOWNORMAL);
+end;
+
+// *****************************************************************************
 // Purpose: Applies the current Notepad++ palette, icon set, and control colors
 // to the configuration dialog.
 // *****************************************************************************
@@ -706,28 +909,142 @@ begin
   AssignImageResources(VirtualImageList);
   AssignImageResources(VirtualImageMC);
 
-  if Plugin.IsDarkModeEnabled then
-  begin
-    DarkModeColors := Default(TNppDarkModeColors);
-    Plugin.GetDarkModeColors(@DarkModeColors);
-    Self.Color := TColor(DarkModeColors.Background);
-    Self.Font.Color := TColor(DarkModeColors.Text);
-  end
-  else
-  begin
-    Self.Color := clBtnFace;
-    Self.Font.Color := clWindowText;
-  end;
+  DarkModeColors := Default(TNppDarkModeColors);
+  if not (Plugin.IsDarkModeEnabled and
+    Plugin.GetDarkModeColors(@DarkModeColors)) then
+    TNppPlugin.InitializeLightModeColors(DarkModeColors);
 
-  TreeViewOptions.Color := Self.Color;
-  TreeViewOptions.Font.Color := Self.Font.Color;
-  LabelDeviceDesc.Font.Color := Self.Font.Color;
+  Self.Color := TColor(DarkModeColors.Background);
+  Self.Font.Color := TColor(DarkModeColors.Text);
+
+  GroupBoxProject.Font.Color := TColor(DarkModeColors.Text);
+  LabelProjectSummaryName.Font.Color := TColor(DarkModeColors.Text);
+  LabelProjectSummaryFile.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectMicrocontroller.Color :=
+    TColor(DarkModeColors.SofterBackground);
+  PanelProjectBoard.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectFramework.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectWiFi.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectWebServer.Color := TColor(DarkModeColors.SofterBackground);
+  PanelProjectMicrocontroller.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectBoard.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectFramework.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectWiFi.Font.Color := TColor(DarkModeColors.DarkerText);
+  PanelProjectWebServer.Font.Color := TColor(DarkModeColors.DarkerText);
+  LabelProjectTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelProjectDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxProjectDependencies.Font.Color := TColor(DarkModeColors.Text);
+  LabelDependencies.Font.Color := TColor(DarkModeColors.DarkerText);
+  ListBoxDependencies.Font.Color := TColor(DarkModeColors.Text);
+  LabelRunTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelRunDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxRunOutputDevice.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxRunAdditionalArguments.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionRunNoLogs.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionRunNoStates.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionRunReset.Font.Color := TColor(DarkModeColors.Text);
+  LabelRunNoLogsDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelRunNoStatesDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelRunResetDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelOptionRunAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelCompileTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelCompileDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxCompileBuildOptions.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxCompileAdditionalArguments.Font.Color :=
+    TColor(DarkModeColors.Text);
+  LabelOptionCompileGenerateOnly.Font.Color := TColor(DarkModeColors.Text);
+  LabelCompileGenerateOnlyDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelOptionCompileAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelUploadTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelUploadDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxUploadAdditionalArguments.Font.Color :=
+    TColor(DarkModeColors.Text);
+  LabelOptionUploadAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelLogsTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelLogsDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxLogsOutputDevice.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxLogsAdditionalArguments.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionLogsReset.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionLogsNoStates.Font.Color := TColor(DarkModeColors.Text);
+  LabelLogsResetDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  LabelLogsNoStatesDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelOptionLogsAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelCleanTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelCleanDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxCleanAdditionalArguments.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionCleanAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelESPHomeTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelESPHomeDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxESPHomeTargetLogging.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxESPHomeAdditionalArguments.Font.Color :=
+    TColor(DarkModeColors.Text);
+  LabelDevice.Font.Color := TColor(DarkModeColors.Text);
+  LabelDeviceDesc.Font.Color := TColor(DarkModeColors.DarkerText);
+  LabelLogLevel.Font.Color := TColor(DarkModeColors.Text);
+  LabelLogLevelDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  LabelOptionESPHomeAdditionalParameters.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelNppTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelNppDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  GroupBoxNppFileSaving.Font.Color := TColor(DarkModeColors.Text);
+  LabelAutosave.Font.Color := TColor(DarkModeColors.Text);
+  LabelAutosaveDescription.Font.Color := TColor(DarkModeColors.DarkerText);
+  LabelExternalConsoleTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelExternalConsoleDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  GroupBoxExternalConsoleBehavior.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxExternalConsolePlacement.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionConsoleAutoclose.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionConsoleAlwaysOnTop.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionConsoleSoloMode.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionConsoleMonitor.Font.Color := TColor(DarkModeColors.Text);
+  LabelOptionConsolePosition.Font.Color := TColor(DarkModeColors.Text);
+  LabelConsoleAutocloseDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelConsoleAlwaysOnTopDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelConsoleSoloModeDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelConsoleMonitorDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelConsolePositionDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelInternalConsoleTitle.Font.Color := TColor(DarkModeColors.Text);
+  LabelInternalConsoleDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  GroupBoxInternalConsoleAppearance.Font.Color := TColor(DarkModeColors.Text);
+  GroupBoxInternalConsoleBehavior.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleForeground.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleBackground.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleFont.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleFontSize.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleScrollback.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleClearOnStart.Font.Color := TColor(DarkModeColors.Text);
+  LabelIntConsoleScrollbackDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
+  LabelIntConsoleClearOnStartDescription.Font.Color :=
+    TColor(DarkModeColors.DarkerText);
   EditOptionRunAdditionalParameters.Font.Color := Self.Font.Color;
   EditOptionESPHomeAdditionalParameters.Font.Color := Self.Font.Color;
   EditOptionUploadAdditionalParameters.Font.Color := Self.Font.Color;
   EditOptionLogsAdditionalParameters.Font.Color := Self.Font.Color;
   EditOptionCleanAdditionalParameters.Font.Color := Self.Font.Color;
   EditOptionCompileAdditionalParameters.Font.Color := Self.Font.Color;
+
+  CategoryButtons.Font.Color := Self.Font.Color;
+  CategoryButtons.RegularButtonColor := clNone;
+  CategoryButtons.HotButtonColor := TColor(DarkModeColors.hotEdge);
+  CategoryButtons.SelectedButtonColor := TColor(DarkModeColors.softerBackground);
 
   // Keep the two clickable color samples independent from the form palette.
   PanelIntConsoleForegroundColor.Color := TColor(
@@ -736,6 +1053,9 @@ begin
   PanelIntConsoleBackgroundColor.Color := TColor(
     ProjectList.Current.GetOption(csKeyIntConsoleBackgroundColor,
     ciDefaultIntConsoleBackgroundColor));
+
+  // Open the settings window on the current-project page.
+  CategoryButtons.SelectedItem := CategoryButtons.Categories[0].Items[0];
 
 end;
 
@@ -784,70 +1104,5 @@ begin
   PopulateComboDevice;
 end;
 
-// *****************************************************************************
-// Purpose: Shows the option card associated with the selected navigation-tree
-// node.
-// *****************************************************************************
-procedure TFormConfig.TreeViewOptionsChange(Sender: TObject; Node: TTreeNode);
-begin
-  inherited;
-  CardProjectOptions.CardPanel.ActiveCardIndex:= TreeViewOptions.Selected.StateIndex;
-end;
-
-// *****************************************************************************
-// Purpose: Prevents the option navigation tree from collapsing its permanently
-// visible hierarchy.
-// *****************************************************************************
-procedure TFormConfig.TreeViewOptionsCollapsing(Sender: TObject; Node: TTreeNode; var AllowCollapse: Boolean);
-begin
-  inherited;
-  AllowCollapse := False;
-end;
-
-// *****************************************************************************
-// Purpose: Draws selected and unselected option nodes with colors compatible
-// with the active theme.
-// *****************************************************************************
-procedure TFormConfig.TreeViewOptionsCustomDrawItem(Sender: TCustomTreeView; Node: TTreeNode; State: TCustomDrawState; var DefaultDraw: Boolean);
-begin
-  inherited;
-  if cdsSelected in State then
-  begin
-    TreeViewOptions.Canvas.Brush.Color := clNavy;
-    TreeViewOptions.Canvas.Font.Color  := Self.Font.Color;
-  end
-  else
-  begin
-    TreeViewOptions.Canvas.Brush.Color := Self.Color;
-    TreeViewOptions.Canvas.Font.Color  := Self.Font.Color;
-  end;
-end;
-
-// *****************************************************************************
-// Purpose: Maps each option-page state index to its named navigation icon.
-// *****************************************************************************
-procedure TFormConfig.TreeViewOptionsGetImageIndex(Sender: TObject; Node: TTreeNode);
-var
-  ImageName: string;
-begin
-  inherited;
-  // StateIndex is shared with CardPanel.ActiveCardIndex and names each page.
-  case Node.StateIndex of
-    0: ImageName := 'project';
-    1: ImageName := 'esphome';
-    2: ImageName := 'run';
-    3: ImageName := 'compile';
-    4: ImageName := 'upload';
-    5: ImageName := 'logs';
-    6: ImageName := 'clean';
-    7: ImageName := 'npp';
-    8: ImageName := 'console2';
-    9: ImageName := 'console';
-  else
-    Exit;
-  end;
-  Node.ImageIndex := TTreeView(Sender).Images.GetIndexByName(ImageName);
-  Node.SelectedIndex := Node.ImageIndex;
-end;
 
 end.

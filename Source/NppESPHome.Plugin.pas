@@ -1,4 +1,4 @@
-// Main Notepad++ plugin unit for NppESPHome.
+ï»¿// Main Notepad++ plugin unit for NppESPHome.
 // Registers the plugin commands, manages Notepad++ events, toolbar integration,
 // project commands, and the project docking window lifecycle.
 unit NppESPHome.Plugin;
@@ -35,6 +35,7 @@ const
 
   fiShowHidePrjWin = 'showhide';
   fiShowHideConsole = 'console';
+  fiOpenConfigFile = 'openconfig';
   fiConfigToolbar = 'toolbar';
   fiAboutWindow = 'about';
 
@@ -61,6 +62,7 @@ resourcestring
   miStartExplorer = 'Open an Explorer window from the current project folder';
   miShowHidePrjWin = 'Hide/Show ESPHome plugin window';
   miShowHideConsole = 'Hide/Show ESPHome console window';
+  miOpenConfigFile = 'Open Plugin Configuration File';
   miConfigToolbar = 'Configure Plugin Toolbar...';
   miAboutWindow = 'About...';
 
@@ -83,12 +85,17 @@ type
   // synchronization.
 
   TESPHomePlugin = class(TNppPlugin)
+  private
+    FLoadProjectDependencies: Boolean;
+    procedure ProjectFileDialogExecute(Sender: TObject);
+    procedure ProjectFileDialogFileOkClick(Sender: TObject;
+      var CanClose: Boolean);
   public
     OperationsOngoing: Boolean; // True while plugin-driven file operations should not trigger UI refresh loops
 
-    procedure ProjectAdd;
+    procedure ProjectAdd(const ParentWnd: HWND = 0);
     procedure ProjectSelect;
-    procedure ProjectRemove;
+    procedure ProjectRemove(const ParentWnd: HWND = 0);
     procedure ProjectConfigure;
     procedure ProjectOpenFiles;
 
@@ -105,6 +112,7 @@ type
     procedure StartExplorer;
     procedure ShowHidePrjWin;
     procedure ShowHideConsole;
+    procedure OpenConfigFile;
     procedure ConfigToolbar;
     procedure AboutWindow;
 
@@ -172,7 +180,7 @@ uses
   TDMB, Vcl.Forms, Vcl.Dialogs,
   System.Math,
   System.UITypes,
-  System.IOUtils;
+  System.IOUtils, Winapi.ShlObj;
 
 resourcestring
   rsInvalidESPHomeInstallation = 'NppESPHome cannot run the requested command because the ESPHome executable was not found.';
@@ -343,6 +351,15 @@ end;
 procedure _ShowHideConsole; cdecl;
 begin
   Plugin.ShowHideConsole;
+end;
+
+// *****************************************************************************
+// Purpose: Forwards the Notepad++ command callback to the plugin configuration
+// file opener.
+// *****************************************************************************
+procedure _OpenConfigFile; cdecl;
+begin
+  Plugin.OpenConfigFile;
 end;
 
 // *****************************************************************************
@@ -638,21 +655,74 @@ end;
 resourcestring
   rsProjectAddFileTypeItem = 'ESPHome project file';
   rsProjectAddFileOpenTitle = 'Add an existing ESPHome project to the known ones';
+  rsLoadProjectDependenciesAutomatically = 'Add dependencies automatically';
+
+const
+  LoadProjectDependenciesControlId = 1001;
 
 // ============================================================================
 // Project Menu Commands
 // ============================================================================
 
 // *****************************************************************************
+// Purpose: Adds the optional dependency-loading choice to the native Windows
+// project file dialog before it is displayed.
+// *****************************************************************************
+procedure TESPHomePlugin.ProjectFileDialogExecute(Sender: TObject);
+var
+  Customize: IFileDialogCustomize;
+  FileDialog: TFileOpenDialog;
+begin
+  FLoadProjectDependencies := False;
+  if not (Sender is TFileOpenDialog) then
+    Exit;
+
+  FileDialog := TFileOpenDialog(Sender);
+  if Supports(FileDialog.Dialog, IFileDialogCustomize, Customize) then
+    Customize.AddCheckButton(LoadProjectDependenciesControlId,
+      PChar(rsLoadProjectDependenciesAutomatically), False);
+end;
+
+// *****************************************************************************
+// Purpose: Captures the custom checkbox while TFileOpenDialog still owns the
+// native dialog interface.
+// *****************************************************************************
+procedure TESPHomePlugin.ProjectFileDialogFileOkClick(Sender: TObject;
+  var CanClose: Boolean);
+var
+  Checked: BOOL;
+  Customize: IFileDialogCustomize;
+  FileDialog: TFileOpenDialog;
+begin
+  FLoadProjectDependencies := False;
+  if not (Sender is TFileOpenDialog) then
+    Exit;
+
+  FileDialog := TFileOpenDialog(Sender);
+  if Supports(FileDialog.Dialog, IFileDialogCustomize, Customize) then
+  begin
+    Checked := False;
+    if Succeeded(Customize.GetCheckButtonState(
+      LoadProjectDependenciesControlId, Checked)) then
+      FLoadProjectDependencies := Checked;
+  end;
+end;
+
+// *****************************************************************************
 // Purpose: Lets the user select an existing ESPHome YAML file and adds it to
 // the known project list after validating it as a project.
 // *****************************************************************************
-procedure TESPHomePlugin.ProjectAdd;
+procedure TESPHomePlugin.ProjectAdd(const ParentWnd: HWND);
 var
+  DialogParent: HWND;
   Project: TProject;
   FileOpen: TFileOpenDialog;
   FileTypeItem: TFileTypeItem;
 begin
+  DialogParent := ParentWnd;
+  if DialogParent = 0 then
+    DialogParent := NppData.NppHandle;
+
   // Configure a strict file dialog so only existing ESPHome YAML files are selectable.
   FileOpen := TFileOpenDialog.Create(nil);
   try
@@ -664,23 +734,30 @@ begin
     FileTypeItem.FileMask := '*.yaml';
     FileTypeItem := FileOpen.FileTypes.Add;
     FileTypeItem.DisplayName := rsProjectAddFileTypeItem;
-    FileTypeItem.FileMask := '*.yal';
-    if FileOpen.Execute(NppData.NppHandle) then
+    FileTypeItem.FileMask := '*.yml';
+    FileOpen.OnExecute := ProjectFileDialogExecute;
+    FileOpen.OnFileOkClick := ProjectFileDialogFileOkClick;
+    if FileOpen.Execute(DialogParent) then
     begin
       // Prevent duplicate project registrations for the same YAML file.
       if Assigned(ProjectList.GetProjectFromFileName(FileOpen.FileName)) then
         TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpen.FileName), ExpandFileName(FileOpen.FileName)])).WindowCaption(rsMessageBoxError).
-          Text(rsProjectAlreadyExists2).Error.OK.Execute(NppData.NppHandle)
+          Text(rsProjectAlreadyExists2).Error.OK.Execute(DialogParent)
       else
       begin
         // Parse the selected YAML immediately; invalid ESPHome files are rejected.
         Project := TProject.Create(FileOpen.FileName);
         if Project.IsValid then
         begin
+          if FLoadProjectDependencies then
+            Project.AddOptionDependencies;
+
           // Make the newly added project current and persist the updated project list.
           ProjectList.Add(Project);
           ProjectList.Current := Project;
           ProjectList.SaveConfig;
+          if FLoadProjectDependencies then
+            Project.SaveOptionDependencies;
           RefreshProjectList;
         end
         else
@@ -688,7 +765,7 @@ begin
           Project.Free;
           TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpen.FileName), ExpandFileName(FileOpen.FileName)])).
             Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-            Error.OK.Execute(NppData.NppHandle);
+            Error.OK.Execute(DialogParent);
         end;
       end;
     end;
@@ -720,17 +797,22 @@ end;
 // Purpose: Removes the current project from the configured project list after
 // user confirmation. The project files themselves are left untouched.
 // *****************************************************************************
-procedure TESPHomePlugin.ProjectRemove;
+procedure TESPHomePlugin.ProjectRemove(const ParentWnd: HWND);
 var
+  DialogParent: HWND;
   I: Integer;
 begin
   inherited;
+  DialogParent := ParentWnd;
+  if DialogParent = 0 then
+    DialogParent := NppData.NppHandle;
+
   if Assigned(ProjectList.Current) then
   begin
     if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName, ExpandFileName(ProjectList.Current.FileName)])).
       Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
       Warning.YesNo.DefButton(tcbNo).AddFlag(tfAllowDialogCancellation).
-      Execute(NppData.NppHandle) = mrYes then
+      Execute(DialogParent) = mrYes then
     begin
       // Remember the old index so the next nearest project can become current.
       I := ProjectList.IndexOf(ProjectList.Current);
@@ -904,7 +986,7 @@ begin
   UpgradeCommand := Format('"%s" --disable-pip-version-check --no-input ' + 'install --upgrade esphome && "%s" version', [ExpandFileName(PipFile),
     ExpandFileName(ESPHomeFile)]);
 
-  // Usa la console integrata solo quando è già visibile,
+  // Usa la console integrata solo quando Ã¨ giÃ  visibile,
   // come per gli altri comandi ESPHome.
   if Assigned(FormConsole) and FormConsole.Visible and TConPtySession.IsSupported then
   begin
@@ -1004,6 +1086,28 @@ begin
       FormConsole.Visible);
   end;
 end;
+
+// *****************************************************************************
+// Purpose: Flushes and opens the plugin INI configuration in Notepad++.
+// *****************************************************************************
+procedure TESPHomePlugin.OpenConfigFile;
+var
+  EmptyFile: TFileStream;
+  FileName: string;
+begin
+  if not Assigned(ConfigIniFile) then
+    Exit;
+
+  ConfigIniFile.UpdateFile;
+  FileName := ExpandFileName(ConfigIniFile.FileName);
+  if not FileExists(FileName) then
+  begin
+    EmptyFile := TFileStream.Create(FileName, fmCreate);
+    EmptyFile.Free;
+  end;
+  OpenFile(FileName, False);
+end;
+
 // *****************************************************************************
 // Purpose: Opens the toolbar customization dialog.
 // *****************************************************************************
@@ -1223,7 +1327,6 @@ resourcestring
 // *****************************************************************************
 procedure TESPHomePlugin.DependencyAdd;
 var
-  Index: Integer;
   FileOpen: TFileOpenDialog;
   FileTypeItem: TFileTypeItem;
 begin
@@ -1269,12 +1372,9 @@ begin
 
     if FileOpen.Execute(NppData.NppHandle) then
     begin
-      // Add selected files to the de-duplicating dependency list.
-      ProjectList.Current.OptionDependencies.AddStrings(FileOpen.Files);
-      // The main project YAML is implicit and should not be stored as a dependency.
-      Index := ProjectList.Current.OptionDependencies.IndexOf(ProjectList.Current.FileName);
-      if Index >= 0 then
-        ProjectList.Current.OptionDependencies.Delete(Index);
+      // TProject centralizes uniqueness, YAML-first ordering, and exclusion of
+      // the main project file.
+      ProjectList.Current.AddOptionDependencies(FileOpen.Files);
       ProjectList.Current.SaveOptionDependencies;
       RefreshProjectList;
       if Assigned(FormProjects) then
@@ -1399,6 +1499,7 @@ begin
     Commands.AddCommand(fiShowHidePrjWin, miShowHidePrjWin, _ShowHidePrjWin);
     Commands.AddCommand(fiShowHideConsole, miShowHideConsole, _ShowHideConsole);
     Commands.AddSeparator('sep.windows.toolbar');
+    Commands.AddCommand(fiOpenConfigFile, miOpenConfigFile, _OpenConfigFile);
     Commands.AddCommand(fiConfigToolbar, miConfigToolbar, _ConfigToolbar);
     Commands.AddCommand(fiAboutWindow, miAboutWindow, _AboutWindow);
 

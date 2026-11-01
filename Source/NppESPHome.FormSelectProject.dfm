@@ -70,20 +70,4 @@ object FormSelection: TFormSelection
     ModalResult = 8
     TabOrder = 1
   end
-  object FileOpenDialogProject: TFileOpenDialog
-    DefaultExtension = '.yaml'
-    FavoriteLinks = <>
-    FileTypes = <
-      item
-        DisplayName = 'File'
-        FileMask = '*.yaml'
-      end
-      item
-        DisplayName = 'File'
-        FileMask = '*.yml'
-      end>
-    Options = [fdoStrictFileTypes, fdoForceFileSystem, fdoFileMustExist]
-    Left = 80
-    Top = 64
-  end
 end

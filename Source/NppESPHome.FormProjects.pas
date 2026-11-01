@@ -42,7 +42,6 @@ type
     ToolButtonSep1: TToolButton;
     ToolButtonOpen: TToolButton;
     VirtualImageList16: TVirtualImageList;
-    FileOpenDialogProject: TFileOpenDialog;
     PopupMenuProjects: TPopupMenu;
     PopupMenuOpen: TMenuItem;
     PopupMenuN1: TMenuItem;
@@ -667,31 +666,12 @@ begin
 end;
 
 // *****************************************************************************
-// Purpose: Removes the current project after confirmation, preserves project
-// files, and selects a remaining project.
+// Purpose: Delegates project removal to the plugin command layer.
 // *****************************************************************************
 procedure TFormProjects.ActionRemoveProjectExecute(Sender: TObject);
-var
-  I: Integer;
 begin
   inherited;
-  if Assigned(ProjectList.Current) then
-  begin
-    if TD(Format(rsKnownProjectRemoval, [ProjectList.Current.FriendlyName,
-      ExpandFileName(ProjectList.Current.FileName)])).Text(rsKnownProjectRemoval2).WindowCaption(rsMessageBoxWarning).
-      ClearFlag(tfPositionRelativeToWindow).Warning.YesNo.DefButton(tcbNo).
-      AddFlag(tfAllowDialogCancellation).Execute(Self) = mrYes then
-    begin
-      I := ProjectList.IndexOf(ProjectList.Current);
-      ProjectList.Delete(I);
-      if ProjectList.Count > 0 then
-        ProjectList.Current := ProjectList.Items[Max(0, I - 1)]
-      else
-        ProjectList.Current := nil;
-      ProjectList.SaveConfig;
-      Plugin.RefreshProjectList;
-    end;
-  end;
+  Plugin.ProjectRemove(Self.Handle);
 end;
 
 // *****************************************************************************
@@ -705,40 +685,12 @@ begin
 end;
 
 // *****************************************************************************
-// Purpose: Adds a selected valid ESPHome project, rejects duplicates, persists
-// it, and refreshes the project UI.
+// Purpose: Delegates project creation to the plugin command layer.
 // *****************************************************************************
 procedure TFormProjects.ActionAddProjectExecute(Sender: TObject);
-var
-  Project: TProject;
 begin
   inherited;
-  if FileOpenDialogProject.Execute(Self.Handle) then
-  begin
-    if Assigned(ProjectList.GetProjectFromFileName(FileOpenDialogProject.FileName)) then
-    begin
-      TD(Format(rsProjectAlreadyExists, [ExtractFileName(FileOpenDialogProject.FileName),
-        ExpandFileName(FileOpenDialogProject.FileName)])).WindowCaption(rsMessageBoxError).
-        Text(rsProjectAlreadyExists2).ClearFlag(tfPositionRelativeToWindow).
-        Error.OK.Execute(Self);
-      Exit;
-    end;
-    Project := TProject.Create(FileOpenDialogProject.FileName);
-    if Project.IsValid then
-    begin
-      ProjectList.Add(Project);
-      ProjectList.Current := Project;
-      ProjectList.SaveConfig;
-      Plugin.RefreshProjectList;
-    end
-    else
-    begin
-      Project.Free;
-      TD(Format(rsInvalidProjectFile, [ExtractFileName(FileOpenDialogProject.FileName),
-        ExpandFileName(FileOpenDialogProject.FileName)])).Text(rsInvalidProjectFile2).WindowCaption(rsMessageBoxError).
-        ClearFlag(tfPositionRelativeToWindow).Error.OK.Execute(Self);
-    end;
-  end;
+  Plugin.ProjectAdd(Self.Handle);
 end;
 
 // *****************************************************************************
