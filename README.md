@@ -49,8 +49,8 @@ replace ESPHome and does not include the ESPHome runtime.
 ## Highlights
 
 - Multiple ESPHome projects with a persistent current-project selection
-- YAML project validation and extraction of device metadata
-- Manually managed dependency files for each project
+- Recursive YAML/include validation and extraction of project metadata
+- Automatic dependency discovery plus unrestricted manual dependency management
 - Direct **Run**, **Compile**, **Upload**, **Logs**, **Clean**, and
   **Clean-All** commands
 - Interactive dockable console with ANSI colors, UTF-8 output, keyboard input,
@@ -79,8 +79,9 @@ dockable console is hidden, commands continue to work in a standard external
 Windows console.
 
 The presence of `esphome.exe` is checked when an ESPHome command is invoked.
-The **Upgrade ESPHome** utility also requires `pip.exe` to be available through
-the `PATH`.
+The **Upgrade ESPHome** utility first looks for `pip.exe` beside the detected
+ESPHome executable, so the matching Python environment is preferred. It falls
+back to a `pip.exe` available through the `PATH`.
 
 See the
 [ESPHome installation guide](https://www.esphome.io/guides/installing_esphome/)
@@ -111,12 +112,16 @@ provided by Notepad++ rather than beside the installed DLL.
 ## Getting Started
 
 1. Choose **Plugins → NppESPHome → Add Project** and select an existing ESPHome
-   YAML project file.
-2. Use **Select Project** to make one of the known projects current.
+   YAML project file. Enable **Add dependencies automatically** in the file
+   dialog if the referenced local files should be registered immediately.
+2. Use **Select Project** to make one of the known projects current. The dialog
+   shows a compact friendly-name list and the full path of the selected YAML
+   file separately.
 3. Open **Configure Project** to select command, target, auto-save, and console
    options.
-4. Add any YAML, CSV, C/C++ header/source, include, text, or other related files
-   that should be treated as project dependencies.
+4. On the **Project** configuration page, use **Auto** to discover referenced
+   files, **Add** to register any other file manually, or **Clear all** to
+   remove every dependency association without deleting files from disk.
 5. Enable **Show/Hide ESPHome Console** if you want commands to run in the
    integrated docking form.
 6. Execute an ESPHome command from the plugin menu, the Notepad++ toolbar, or
@@ -130,18 +135,47 @@ it never deletes the underlying file.
 
 ## Project Model
 
-When a project is added, the plugin parses the YAML file and accepts it when it
-contains:
+When a project is added, the plugin parses the main YAML file and recursively
+follows local YAML `!include` directives and local packages. It accepts the
+project when the resulting configuration contains:
 
 - a non-empty `esphome.name`;
 - one supported top-level platform: `esp32`, `esp8266`, `bk72xx`, `ln882x`,
   `rp2040`, `rtl87xx`, or `host`.
 
-Values referenced as `$name` or `${name}` are resolved from the top-level
-`substitutions` section, including nested substitutions. The parser extracts
-the friendly name, platform, board, framework, and the presence of `wifi` and
-`web_server`. If `esphome.friendly_name` is absent, the project name is used for
-display.
+Values referenced as `$name` or `${name}` are resolved from substitutions,
+including nested substitutions and variables supplied by include mappings.
+Package defaults fill missing values without overriding values inherited from
+the main project. Local include paths are resolved relative to the file that
+contains them; missing files, circular include chains, and YAML parsing errors
+invalidate the project. Empty included package files are accepted as valid
+no-ops, matching ESPHome behavior. Top-level hidden blocks and `!remove`
+directives are respected.
+
+The parser extracts the friendly name, microcontroller family and variant,
+board, framework, and the presence of Wi-Fi, Ethernet, Web Server, the native
+ESPHome API, MQTT, OTA, captive portal, and logger components. When an ESP32
+variant is omitted, it can also be inferred from the board name. If
+`esphome.friendly_name` is absent, the project name is used for display. The
+configuration header presents the available values and enabled features as
+compact, dynamically arranged badges.
+
+Automatic dependency discovery deliberately uses an inclusion list:
+
+- local `!include` and package files: `.yaml` and `.yml`;
+- `esphome.includes` and `esphome.includes_c`: C/C++ headers, sources, template
+  files, and include fragments;
+- `web_server.css_include` and `web_server.js_include`: `.css`, `.js`, and
+  `.mjs`;
+- local `external_components`: Python and C/C++ source files from the selected
+  component directories;
+- existing local `.txt` and `.csv` files referenced by the configuration.
+
+Secrets, certificates, keys, SVG files, remote sources, unresolved dynamic
+paths, and unsupported binary assets are not added automatically. YAML files
+are placed first, followed by the other files in discovery order, with
+duplicates removed. This whitelist applies only to automatic discovery:
+manual **Add** remains unrestricted and can register any existing file.
 
 Each known project can have an arbitrary list of dependency files. The docked
 tree displays those files below their owning project, can open the complete set
@@ -377,7 +411,7 @@ dynamic **Configure Project** menu caption.
 Other menu entries include adding/removing projects, opening project files,
 Logs, Clean, Clean-All, upgrading ESPHome, opening a project terminal or File
 Explorer, independently showing/hiding the project and console docking forms,
-configuring the toolbar, and About.
+opening the plugin configuration file, configuring the toolbar, and About.
 
 The terminal starts in the project directory and receives two convenience
 environment variables:
@@ -388,8 +422,11 @@ ESPProject=<absolute path to the current project YAML>
 ```
 
 **Upgrade ESPHome** runs `pip.exe install --upgrade esphome`, then displays the
-installed ESPHome version. **ESPHome Documentation** opens the official
-component documentation in the default browser.
+installed ESPHome version. It uses the integrated console when that window is
+visible and ConPTY is available; otherwise it opens a standard external console
+and keeps it open so the output and errors remain readable. **ESPHome
+Documentation** opens the official component documentation in the default
+browser.
 
 ---
 
@@ -404,7 +441,9 @@ The plugin uses the configuration directory reported by Notepad++.
 
 Each project is stored in an INI section named with the absolute path of its
 main YAML file. Removing a project also removes its corresponding settings
-section.
+section. **Plugins → NppESPHome → Open Plugin Configuration File** saves any
+pending INI changes, creates the file if necessary, and opens it directly in
+Notepad++.
 
 ---
 
@@ -442,7 +481,7 @@ configuration UI.
 
 The current development baseline is:
 
-- Delphi 13 / compiler 37.0
+- Delphi 13.2 / compiler 37.0
 - Notepad++ 8.8.3
 
 ESPHome is an external runtime discovered through `PATH`; the plugin source is
